@@ -145,40 +145,50 @@ export function ShipmentFormPage({ basePath }: { basePath: '/admin' | '/portal' 
             onChange={(e) => setDelivery(e.target.value)}
           />
         </label>
-        <label className="text-sm font-medium">
-          Origin street
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            value={originStreet}
-            onChange={(e) => setOriginStreet(e.target.value)}
-            required
-          />
-        </label>
-        <label className="text-sm font-medium">
-          Origin district
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            value={originDistrict}
-            onChange={(e) => setOriginDistrict(e.target.value)}
-          />
-        </label>
-        <label className="text-sm font-medium">
-          Destination street
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            value={destinationStreet}
-            onChange={(e) => setDestinationStreet(e.target.value)}
-            required
-          />
-        </label>
-        <label className="text-sm font-medium">
-          Destination district
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            value={destinationDistrict}
-            onChange={(e) => setDestinationDistrict(e.target.value)}
-          />
-        </label>
+        <fieldset className="grid gap-3 rounded-md border border-slate-200 p-3 md:col-span-2 md:grid-cols-2">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Pickup
+          </legend>
+          <label className="text-sm font-medium">
+            Origin street
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={originStreet}
+              onChange={(e) => setOriginStreet(e.target.value)}
+              required
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Origin district
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={originDistrict}
+              onChange={(e) => setOriginDistrict(e.target.value)}
+            />
+          </label>
+        </fieldset>
+        <fieldset className="grid gap-3 rounded-md border border-slate-200 p-3 md:col-span-2 md:grid-cols-2">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Delivery
+          </legend>
+          <label className="text-sm font-medium">
+            Destination street
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={destinationStreet}
+              onChange={(e) => setDestinationStreet(e.target.value)}
+              required
+            />
+          </label>
+          <label className="text-sm font-medium">
+            Destination district
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={destinationDistrict}
+              onChange={(e) => setDestinationDistrict(e.target.value)}
+            />
+          </label>
+        </fieldset>
         {error ? (
           <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">
             {error}
