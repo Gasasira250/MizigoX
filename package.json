@@ -1,6 +1,7 @@
 {
   "name": "mizigox",
   "private": true,
+  "type": "module",
   "version": "0.1.0",
   "description": "MizigoX freight and logistics platform",
   "workspaces": [

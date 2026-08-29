@@ -115,9 +115,7 @@ export async function login(
   if (!passwordMatches) {
     const failedCount = user.failed_login_count + 1;
     const lockedUntil =
-      failedCount >= MAX_FAILED_LOGINS
-        ? new Date(Date.now() + LOCK_MINUTES * 60 * 1000)
-        : null;
+      failedCount >= MAX_FAILED_LOGINS ? new Date(Date.now() + LOCK_MINUTES * 60 * 1000) : null;
     await pool.query(
       `
         UPDATE users

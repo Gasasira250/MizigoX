@@ -76,8 +76,10 @@ describe('auth and rbac', () => {
       .get('/api/v1/countries')
       .set('Authorization', `Bearer ${login.body.data.accessToken}`);
     expect(countries.status).toBe(200);
-    expect(countries.body.data.some((row: { code: string; is_active: boolean }) => row.code === 'RW' && row.is_active)).toBe(
-      true,
-    );
+    expect(
+      countries.body.data.some(
+        (row: { code: string; is_active: boolean }) => row.code === 'RW' && row.is_active,
+      ),
+    ).toBe(true);
   });
 });

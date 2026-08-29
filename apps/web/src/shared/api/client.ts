@@ -46,7 +46,12 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
     credentials: 'include',
   });
 
-  if (response.status === 401 && allowRefresh && path !== '/auth/refresh' && path !== '/auth/login') {
+  if (
+    response.status === 401 &&
+    allowRefresh &&
+    path !== '/auth/refresh' &&
+    path !== '/auth/login'
+  ) {
     const nextToken = await refreshAccessToken();
     if (nextToken) {
       return request<T>(path, init, false);
