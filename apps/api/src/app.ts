@@ -12,6 +12,9 @@ import { healthRouter } from './modules/health/health.routes.js';
 import { customerRouter } from './modules/customers/customer.routes.js';
 import { identityRouter } from './modules/identity/identity.routes.js';
 import { shipmentRouter } from './modules/shipments/shipment.routes.js';
+import { vehicleRouter } from './modules/vehicles/vehicle.routes.js';
+import { driverRouter } from './modules/drivers/driver.routes.js';
+import { fleetRouter } from './modules/fleet/fleet.routes.js';
 
 export function createApp() {
   const env = getEnv();
@@ -38,6 +41,9 @@ export function createApp() {
   app.use('/api/v1', identityRouter);
   app.use('/api/v1/customers', customerRouter);
   app.use('/api/v1/shipments', shipmentRouter);
+  app.use('/api/v1/vehicles', vehicleRouter);
+  app.use('/api/v1/drivers', driverRouter);
+  app.use('/api/v1/fleet', fleetRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);
