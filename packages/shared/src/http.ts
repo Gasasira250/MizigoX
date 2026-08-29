@@ -59,3 +59,26 @@ export interface LoginResponse {
   expiresIn: number;
   user: SessionUser;
 }
+
+export interface InvitePreview {
+  email: string;
+  organizationName: string;
+  organizationType: string;
+  role: string;
+  expiresAt: string;
+}
+
+export interface CreatedInvite {
+  id: string;
+  email: string;
+  role: string;
+  organizationId: string;
+  expiresAt: string;
+  token: string;
+}
+
+export interface RoleOption {
+  code: string;
+  name: string;
+  scope: string;
+}

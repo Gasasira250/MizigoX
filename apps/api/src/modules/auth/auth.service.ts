@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import type { Pool } from 'pg';
 import { getEnv } from '../../config/env.js';
 import { writeAudit } from '../../lib/audit.js';
-import { createOpaqueToken, hashToken, verifyPassword } from '../../lib/crypto.js';
+import { createOpaqueToken, hashToken, hashPassword, verifyPassword } from '../../lib/crypto.js';
 import { forbidden, unauthorized } from '../../lib/errors.js';
 import type { AccessTokenClaims, AuthContext } from './auth.types.js';
 
@@ -161,13 +161,6 @@ export async function login(
   );
 
   const auth = membershipToAuth(user);
-  const tokens = signAccessToken(auth);
-  const refresh = await issueRefreshToken(pool, {
-    userId: auth.userId,
-    ip: input.ip,
-    userAgent: input.userAgent,
-  });
-
   await writeAudit(pool, {
     actorUserId: auth.userId,
     organizationId: auth.orgId,
@@ -179,11 +172,7 @@ export async function login(
     requestId: input.requestId,
   });
 
-  return {
-    ...tokens,
-    refreshToken: refresh,
-    user: toSessionUser(auth),
-  };
+  return createSession(pool, auth, input);
 }
 
 export async function refreshSession(
@@ -222,18 +211,7 @@ export async function refreshSession(
   }
 
   const auth = membershipToAuth(membership);
-  const tokens = signAccessToken(auth);
-  const refreshToken = await issueRefreshToken(pool, {
-    userId: auth.userId,
-    ip: input.ip,
-    userAgent: input.userAgent,
-  });
-
-  return {
-    ...tokens,
-    refreshToken,
-    user: toSessionUser(auth),
-  };
+  return createSession(pool, auth, input);
 }
 
 export async function logout(pool: Pool, refreshToken: string | undefined, actorUserId?: string) {
@@ -264,6 +242,67 @@ export async function loadAuthContext(pool: Pool, userId: string): Promise<AuthC
     throw unauthorized('Session is no longer valid');
   }
   return membershipToAuth(membership);
+}
+
+export async function createSession(
+  pool: Pool,
+  auth: AuthContext,
+  input: { ip?: string; userAgent?: string },
+) {
+  const tokens = signAccessToken(auth);
+  const refreshToken = await issueRefreshToken(pool, {
+    userId: auth.userId,
+    ip: input.ip,
+    userAgent: input.userAgent,
+  });
+
+  return {
+    ...tokens,
+    refreshToken,
+    user: toSessionUser(auth),
+  };
+}
+
+export async function changePassword(
+  pool: Pool,
+  input: {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+    requestId?: string;
+  },
+) {
+  const row = await pool.query<{ password_hash: string }>(
+    'SELECT password_hash FROM users WHERE id = $1 AND deleted_at IS NULL',
+    [input.userId],
+  );
+  const current = row.rows[0];
+  if (!current) {
+    throw unauthorized('Session is no longer valid');
+  }
+
+  const matches = await verifyPassword(current.password_hash, input.currentPassword);
+  if (!matches) {
+    throw unauthorized('Current password is incorrect');
+  }
+
+  const nextHash = await hashPassword(input.newPassword);
+  await pool.query('UPDATE users SET password_hash = $2 WHERE id = $1', [input.userId, nextHash]);
+  await pool.query(
+    `
+      UPDATE refresh_tokens
+      SET revoked_at = now()
+      WHERE user_id = $1 AND revoked_at IS NULL
+    `,
+    [input.userId],
+  );
+  await writeAudit(pool, {
+    actorUserId: input.userId,
+    action: 'AUTH_PASSWORD_CHANGED',
+    entityType: 'user',
+    entityId: input.userId,
+    requestId: input.requestId,
+  });
 }
 
 async function issueRefreshToken(

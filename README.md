@@ -46,6 +46,8 @@ npm run dev
 
 Sign in with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from your local `.env`.
 
+New users cannot self-register. A user with `users.manage` creates an invite; the invitee opens `/register?token=…` and sets a password.
+
 ## Checks
 
 ```bash

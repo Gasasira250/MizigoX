@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '../features/auth/LoginPage';
+import { RegisterPage } from '../features/auth/RegisterPage';
 import { FoundationPage } from '../features/system/FoundationPage';
 import { LaterPhasePage } from '../features/system/LaterPhasePage';
 import { useAuth } from '../shared/auth/AuthProvider';
@@ -50,6 +51,7 @@ export function AppRouter() {
     <Routes>
       <Route element={<GuestOnly />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
       </Route>
 
       <Route element={<RequireAuth allow={['admin']} />}>
@@ -65,7 +67,7 @@ export function AppRouter() {
             element={
               <LaterPhasePage
                 title="Customer portal"
-                phase="Phase 2"
+                phase="Later phase"
                 description="Customers will create shipments, track cargo, and view invoices here once those modules exist."
               />
             }
