@@ -6,7 +6,13 @@ import { CustomerFormPage } from '../features/customers/CustomerFormPage';
 import { CustomersPage } from '../features/customers/CustomersPage';
 import { ShipmentDetailPage } from '../features/shipments/ShipmentDetailPage';
 import { ShipmentFormPage } from '../features/shipments/ShipmentFormPage';
+import { DriverDetailPage } from '../features/drivers/DriverDetailPage';
+import { DriverFormPage } from '../features/drivers/DriverFormPage';
+import { DriversPage } from '../features/drivers/DriversPage';
 import { ShipmentsPage } from '../features/shipments/ShipmentsPage';
+import { VehicleDetailPage } from '../features/vehicles/VehicleDetailPage';
+import { VehicleFormPage } from '../features/vehicles/VehicleFormPage';
+import { VehiclesPage } from '../features/vehicles/VehiclesPage';
 import { FoundationPage } from '../features/system/FoundationPage';
 import { LaterPhasePage } from '../features/system/LaterPhasePage';
 import { useAuth } from '../shared/auth/AuthProvider';
@@ -74,6 +80,20 @@ export function AppRouter() {
             <Route path="new" element={<ShipmentFormPage basePath="/admin" />} />
             <Route path=":shipmentId/edit" element={<ShipmentFormPage basePath="/admin" />} />
             <Route path=":shipmentId" element={<ShipmentDetailPage basePath="/admin" />} />
+          </Route>
+          <Route path="/admin/vehicles">
+            <Route index element={<VehiclesPage />} />
+            <Route path="new" element={<VehicleFormPage />} />
+            <Route path=":vehicleId/edit" element={<VehicleFormPage />} />
+            <Route path=":vehicleId/documents" element={<VehicleDetailPage />} />
+            <Route path=":vehicleId" element={<VehicleDetailPage />} />
+          </Route>
+          <Route path="/admin/drivers">
+            <Route index element={<DriversPage />} />
+            <Route path="new" element={<DriverFormPage />} />
+            <Route path=":driverId/edit" element={<DriverFormPage />} />
+            <Route path=":driverId/documents" element={<DriverDetailPage />} />
+            <Route path=":driverId" element={<DriverDetailPage />} />
           </Route>
         </Route>
       </Route>
