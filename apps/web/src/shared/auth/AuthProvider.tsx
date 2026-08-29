@@ -6,6 +6,12 @@ interface AuthContextValue {
   user: SessionUser | null;
   ready: boolean;
   login: (email: string, password: string) => Promise<SessionUser>;
+  register: (input: {
+    token: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+  }) => Promise<SessionUser>;
   logout: () => Promise<void>;
 }
 
@@ -53,6 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ready,
       login: async (email: string, password: string) => {
         const result = await apiPost<LoginResponse>('/auth/login', { email, password });
+        setAccessToken(result.accessToken);
+        setUser(result.user);
+        return result.user;
+      },
+      register: async (input) => {
+        const result = await apiPost<LoginResponse>('/auth/register', input);
         setAccessToken(result.accessToken);
         setUser(result.user);
         return result.user;

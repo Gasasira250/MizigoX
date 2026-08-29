@@ -41,6 +41,21 @@ identityRouter.get(
 );
 
 identityRouter.get(
+  '/roles',
+  requirePermission('users.manage'),
+  asyncHandler(async (_req, res) => {
+    const result = await getPool().query(
+      `
+        SELECT code, name, scope::text AS scope, description
+        FROM roles
+        ORDER BY name
+      `,
+    );
+    sendSuccess(res, result.rows);
+  }),
+);
+
+identityRouter.get(
   '/organizations',
   requirePermission('org.settings'),
   asyncHandler(async (req, res) => {

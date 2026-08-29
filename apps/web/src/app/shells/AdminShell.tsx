@@ -2,13 +2,13 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
 const upcoming = [
-  { label: 'Shipments', phase: 'Phase 2' },
-  { label: 'Customers', phase: 'Phase 2' },
-  { label: 'Vehicles', phase: 'Phase 3' },
-  { label: 'Drivers', phase: 'Phase 3' },
-  { label: 'Routes', phase: 'Phase 4' },
-  { label: 'Tracking', phase: 'Phase 5' },
-  { label: 'Invoices', phase: 'Phase 6' },
+  { label: 'Shipments', phase: 'Later' },
+  { label: 'Customers', phase: 'Later' },
+  { label: 'Vehicles', phase: 'Later' },
+  { label: 'Drivers', phase: 'Later' },
+  { label: 'Routes', phase: 'Later' },
+  { label: 'Tracking', phase: 'Later' },
+  { label: 'Invoices', phase: 'Later' },
 ];
 
 export function AdminShell() {

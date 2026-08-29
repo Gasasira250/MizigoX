@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ApiError } from '../../shared/api/client';
 import { useAuth } from '../../shared/auth/AuthProvider';
 import { homePathFor } from '../../shared/auth/home-path';
@@ -76,6 +76,13 @@ export function LoginPage() {
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+        <p className="mt-6 text-sm text-slate-600">
+          Invited to MizigoX? Open the invite link from your administrator, or go to{' '}
+          <Link className="font-medium text-teal-800 hover:underline" to="/register">
+            create an account
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

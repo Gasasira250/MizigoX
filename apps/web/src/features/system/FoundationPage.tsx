@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { HealthPayload, ReadinessPayload } from '@mizigox/shared';
+import { ChangePasswordPanel } from '../auth/ChangePasswordPanel';
+import { InviteUserPanel } from '../auth/InviteUserPanel';
 import { apiGet } from '../../shared/api/client';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
@@ -70,11 +72,11 @@ export function FoundationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 1</p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">Platform foundation</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 2</p>
+        <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">Identity and authentication</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          This screen reads live health, database, and authentication data. Shipment, fleet, and
-          billing modules are intentionally not implemented yet.
+          Live database, session, and invite-based registration. Customers, shipments, and other
+          operational modules are not implemented yet.
         </p>
       </div>
 
@@ -105,6 +107,9 @@ export function FoundationPage() {
           ))}
         </div>
       </section>
+
+      <InviteUserPanel />
+      <ChangePasswordPanel />
     </div>
   );
 }
