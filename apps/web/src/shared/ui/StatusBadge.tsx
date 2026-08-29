@@ -1,0 +1,18 @@
+export function StatusBadge({ status }: { status: string }) {
+  const tone =
+    status === 'DELIVERED'
+      ? 'bg-emerald-50 text-emerald-800'
+      : status === 'CANCELLED'
+        ? 'bg-slate-100 text-slate-600'
+        : status === 'EXCEPTION'
+          ? 'bg-red-50 text-red-700'
+          : status === 'IN_TRANSIT' || status === 'OUT_FOR_DELIVERY'
+            ? 'bg-amber-50 text-amber-800'
+            : 'bg-sky-50 text-sky-800';
+
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>
+      {status.replaceAll('_', ' ')}
+    </span>
+  );
+}

@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
 export function PortalShell({ title }: { title: string }) {
@@ -12,6 +12,11 @@ export function PortalShell({ title }: { title: string }) {
           <p className="text-xs uppercase tracking-[0.16em] text-slate-500">{title}</p>
         </div>
         <div className="flex items-center gap-4 text-sm">
+          {title === 'Customer portal' ? (
+            <NavLink className="text-slate-700 hover:underline" to="/portal/shipments">
+              Shipments
+            </NavLink>
+          ) : null}
           <span className="text-slate-600">
             {user?.firstName} {user?.lastName}
           </span>
@@ -26,7 +31,7 @@ export function PortalShell({ title }: { title: string }) {
           </button>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl p-6">
+      <main className="mx-auto max-w-5xl p-6">
         <Outlet />
       </main>
     </div>

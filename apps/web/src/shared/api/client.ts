@@ -82,6 +82,13 @@ export function apiPost<T>(path: string, body?: unknown) {
   });
 }
 
+export function apiPatch<T>(path: string, body?: unknown) {
+  return request<T>(path, {
+    method: 'PATCH',
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
 export async function refreshAccessToken() {
   if (!refreshPromise) {
     refreshPromise = request<{ accessToken: string }>('/auth/refresh', { method: 'POST' }, false)

@@ -1,18 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
-const upcoming = [
-  { label: 'Shipments', phase: 'Later' },
-  { label: 'Customers', phase: 'Later' },
-  { label: 'Vehicles', phase: 'Later' },
-  { label: 'Drivers', phase: 'Later' },
-  { label: 'Routes', phase: 'Later' },
-  { label: 'Tracking', phase: 'Later' },
-  { label: 'Invoices', phase: 'Later' },
-];
+const later = ['Vehicles', 'Drivers', 'Routes', 'Tracking', 'Invoices'];
 
 export function AdminShell() {
   const { user, logout } = useAuth();
+  const canCustomers = user?.permissions.includes('customers.manage');
+  const canShipments = user?.permissions.includes('shipments.read');
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -45,17 +39,40 @@ export function AdminShell() {
           <nav className="flex flex-col gap-1">
             <NavLink
               to="/admin"
-              className="rounded-md bg-[#12355b] px-3 py-2 text-sm font-medium text-white"
+              end
+              className={({ isActive }) =>
+                `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+              }
             >
               Foundation
             </NavLink>
-            {upcoming.map((item) => (
+            {canCustomers ? (
+              <NavLink
+                to="/admin/customers"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Customers
+              </NavLink>
+            ) : null}
+            {canShipments ? (
+              <NavLink
+                to="/admin/shipments"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Shipments
+              </NavLink>
+            ) : null}
+            {later.map((item) => (
               <div
-                key={item.label}
+                key={item}
                 className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-slate-400"
               >
-                <span>{item.label}</span>
-                <span className="text-[10px] uppercase tracking-wide">{item.phase}</span>
+                <span>{item}</span>
+                <span className="text-[10px] uppercase tracking-wide">Later</span>
               </div>
             ))}
           </nav>

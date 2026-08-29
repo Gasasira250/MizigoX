@@ -9,7 +9,9 @@ import { requestId } from './middleware/request-id.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
+import { customerRouter } from './modules/customers/customer.routes.js';
 import { identityRouter } from './modules/identity/identity.routes.js';
+import { shipmentRouter } from './modules/shipments/shipment.routes.js';
 
 export function createApp() {
   const env = getEnv();
@@ -34,6 +36,8 @@ export function createApp() {
   app.use('/api/v1/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1', identityRouter);
+  app.use('/api/v1/customers', customerRouter);
+  app.use('/api/v1/shipments', shipmentRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);
