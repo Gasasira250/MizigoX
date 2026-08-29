@@ -51,8 +51,8 @@ export function AppRouter() {
     <Routes>
       <Route element={<GuestOnly />}>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
       </Route>
+      <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<RequireAuth allow={['admin']} />}>
         <Route element={<AdminShell />}>
