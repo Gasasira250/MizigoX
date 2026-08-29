@@ -361,9 +361,9 @@ async function loadAddress(pool: Pool, addressId: string | null) {
   }
   const result = await pool.query(
     `
-      SELECT id, organization_id, label, country_code, admin_area_1, admin_area_2,
-             locality, sub_locality, street_line1, street_line2, postal_code,
-             landmark, formatted_address
+      SELECT id, organization_id, label, address_type::text AS address_type, country_code,
+             admin_area_1, admin_area_2, locality, sub_locality, street_line1, street_line2,
+             postal_code, landmark, formatted_address, latitude, longitude, is_default
       FROM addresses WHERE id = $1
     `,
     [addressId],

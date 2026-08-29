@@ -33,6 +33,7 @@ export interface AddressPayload {
   id: string;
   organizationId: string;
   label: string | null;
+  addressType: string;
   countryCode: string;
   adminArea1: string | null;
   adminArea2: string | null;
@@ -43,6 +44,9 @@ export interface AddressPayload {
   postalCode: string | null;
   landmark: string | null;
   formattedAddress: string;
+  latitude: number | null;
+  longitude: number | null;
+  isDefault: boolean;
 }
 
 export interface ContactPayload {
@@ -54,20 +58,33 @@ export interface ContactPayload {
   phoneE164: string | null;
   jobTitle: string | null;
   isPrimary: boolean;
+  status: string;
 }
 
 export interface CustomerPayload {
   id: string;
+  customerReference: string;
   name: string;
   legalName: string | null;
+  customerType: string;
+  registrationNumber: string | null;
+  taxId: string | null;
   email: string | null;
   phoneE164: string | null;
+  website: string | null;
   countryCode: string;
+  city: string | null;
   defaultCurrencyCode: string;
   status: string;
+  notes: string | null;
+  createdByUserId: string | null;
+  createdByName: string | null;
+  createdAt: string;
+  updatedAt: string;
   parentOrganizationId: string | null;
   preferredOperatorOrganizationId: string | null;
   creditTermsDays: number;
+  primaryContactName: string | null;
   contacts: ContactPayload[];
   addresses: AddressPayload[];
 }

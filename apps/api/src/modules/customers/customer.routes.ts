@@ -3,19 +3,28 @@ import { getPool } from '../../db/pool.js';
 import { asyncHandler } from '../../lib/async-handler.js';
 import { sendSuccess } from '../../lib/http.js';
 import { authenticate } from '../../middleware/authenticate.js';
-import { requirePermission } from '../../middleware/authorize.js';
+import { requireAnyPermission } from '../../middleware/authorize.js';
 import {
   addressInputSchema,
   contactInputSchema,
+  updateAddressSchema,
   createCustomerSchema,
   listCustomersQuerySchema,
+  updateCustomerSchema,
 } from './customer.schemas.js';
 import {
   addCustomerAddress,
   addCustomerContact,
+  archiveCustomer,
   createCustomer,
   getCustomer,
   listCustomers,
+  removeCustomerAddress,
+  removeCustomerContact,
+  setCustomerActive,
+  updateCustomer,
+  updateCustomerAddress,
+  updateCustomerContact,
 } from './customer.service.js';
 
 export const customerRouter = Router();
@@ -24,7 +33,7 @@ customerRouter.use(authenticate);
 
 customerRouter.get(
   '/',
-  requirePermission('customers.manage'),
+  requireAnyPermission('customers.manage', 'customers.read'),
   asyncHandler(async (req, res) => {
     const query = listCustomersQuerySchema.parse(req.query);
     const result = await listCustomers(getPool(), req.auth!, query);
@@ -38,7 +47,7 @@ customerRouter.get(
 
 customerRouter.post(
   '/',
-  requirePermission('customers.manage'),
+  requireAnyPermission('customers.manage', 'customers.create'),
   asyncHandler(async (req, res) => {
     const body = createCustomerSchema.parse(req.body);
     const customer = await createCustomer(getPool(), req.auth!, body);
@@ -51,9 +60,10 @@ customerRouter.get(
   asyncHandler(async (req, res) => {
     const auth = req.auth!;
     const customerId = String(req.params.customerId);
-    const canManage = auth.permissions.includes('customers.manage');
+    const canRead =
+      auth.permissions.includes('customers.manage') || auth.permissions.includes('customers.read');
     const isOwnOrg = auth.orgId === customerId;
-    if (!canManage && !isOwnOrg) {
+    if (!canRead && !isOwnOrg) {
       res.status(403).json({
         error: {
           code: 'FORBIDDEN',
@@ -69,22 +79,144 @@ customerRouter.get(
   }),
 );
 
+customerRouter.patch(
+  '/:customerId',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const body = updateCustomerSchema.parse(req.body);
+    const customer = await updateCustomer(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      body,
+    );
+    sendSuccess(res, customer);
+  }),
+);
+
+customerRouter.post(
+  '/:customerId/activate',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const customer = await setCustomerActive(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      true,
+    );
+    sendSuccess(res, customer);
+  }),
+);
+
+customerRouter.post(
+  '/:customerId/deactivate',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const customer = await setCustomerActive(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      false,
+    );
+    sendSuccess(res, customer);
+  }),
+);
+
+customerRouter.delete(
+  '/:customerId',
+  requireAnyPermission('customers.manage', 'customers.delete'),
+  asyncHandler(async (req, res) => {
+    const result = await archiveCustomer(getPool(), req.auth!, String(req.params.customerId));
+    sendSuccess(res, result);
+  }),
+);
+
 customerRouter.post(
   '/:customerId/contacts',
-  requirePermission('customers.manage'),
+  requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
     const body = contactInputSchema.parse(req.body);
-    const id = await addCustomerContact(getPool(), req.auth!, String(req.params.customerId), body);
-    sendSuccess(res, { id }, 201);
+    const contact = await addCustomerContact(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      body,
+    );
+    sendSuccess(res, contact, 201);
+  }),
+);
+
+customerRouter.patch(
+  '/:customerId/contacts/:contactId',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const body = contactInputSchema.partial().parse(req.body);
+    const contact = await updateCustomerContact(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      String(req.params.contactId),
+      body,
+    );
+    sendSuccess(res, contact);
+  }),
+);
+
+customerRouter.delete(
+  '/:customerId/contacts/:contactId',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const result = await removeCustomerContact(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      String(req.params.contactId),
+    );
+    sendSuccess(res, result);
   }),
 );
 
 customerRouter.post(
   '/:customerId/addresses',
-  requirePermission('customers.manage'),
+  requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
     const body = addressInputSchema.parse(req.body);
-    const id = await addCustomerAddress(getPool(), req.auth!, String(req.params.customerId), body);
-    sendSuccess(res, { id }, 201);
+    const address = await addCustomerAddress(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      body,
+    );
+    sendSuccess(res, address, 201);
+  }),
+);
+
+customerRouter.patch(
+  '/:customerId/addresses/:addressId',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const body = updateAddressSchema.parse(req.body);
+    const address = await updateCustomerAddress(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      String(req.params.addressId),
+      body,
+    );
+    sendSuccess(res, address);
+  }),
+);
+
+customerRouter.delete(
+  '/:customerId/addresses/:addressId',
+  requireAnyPermission('customers.manage', 'customers.update'),
+  asyncHandler(async (req, res) => {
+    const result = await removeCustomerAddress(
+      getPool(),
+      req.auth!,
+      String(req.params.customerId),
+      String(req.params.addressId),
+    );
+    sendSuccess(res, result);
   }),
 );

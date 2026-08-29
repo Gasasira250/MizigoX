@@ -1,8 +1,9 @@
-import type { AddressPayload } from '@mizigox/shared';
+import type { AddressPayload, AddressType } from '@mizigox/shared';
 import type { PoolClient } from 'pg';
 
 export interface AddressInput {
   label?: string;
+  addressType?: AddressType;
   countryCode: string;
   adminArea1?: string;
   adminArea2?: string;
@@ -12,6 +13,8 @@ export interface AddressInput {
   streetLine2?: string;
   postalCode?: string;
   landmark?: string;
+  latitude?: number;
+  longitude?: number;
   isDefault?: boolean;
 }
 
@@ -36,20 +39,32 @@ export async function insertAddress(
   organizationId: string,
   input: AddressInput,
 ) {
+  if (input.isDefault) {
+    await client.query(
+      `
+        UPDATE addresses
+        SET is_default = false
+        WHERE organization_id = $1 AND deleted_at IS NULL AND is_default = true
+      `,
+      [organizationId],
+    );
+  }
+
   const formatted = formatAddress(input) || input.countryCode;
   const result = await client.query<{ id: string }>(
     `
       INSERT INTO addresses (
-        organization_id, label, country_code, admin_area_1, admin_area_2,
+        organization_id, label, address_type, country_code, admin_area_1, admin_area_2,
         locality, sub_locality, street_line1, street_line2, postal_code,
-        landmark, formatted_address, is_default
+        landmark, formatted_address, latitude, longitude, is_default
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING id
     `,
     [
       organizationId,
       input.label ?? null,
+      input.addressType ?? 'OTHER',
       input.countryCode,
       input.adminArea1 ?? null,
       input.adminArea2 ?? null,
@@ -60,6 +75,8 @@ export async function insertAddress(
       input.postalCode ?? null,
       input.landmark ?? null,
       formatted,
+      input.latitude ?? null,
+      input.longitude ?? null,
       input.isDefault ?? false,
     ],
   );
@@ -74,6 +91,7 @@ export function mapAddress(row: {
   id: string;
   organization_id: string;
   label: string | null;
+  address_type?: string | null;
   country_code: string;
   admin_area_1: string | null;
   admin_area_2: string | null;
@@ -84,11 +102,15 @@ export function mapAddress(row: {
   postal_code: string | null;
   landmark: string | null;
   formatted_address: string;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
+  is_default?: boolean | null;
 }): AddressPayload {
   return {
     id: row.id,
     organizationId: row.organization_id,
     label: row.label,
+    addressType: row.address_type ?? 'OTHER',
     countryCode: row.country_code,
     adminArea1: row.admin_area_1,
     adminArea2: row.admin_area_2,
@@ -99,6 +121,9 @@ export function mapAddress(row: {
     postalCode: row.postal_code,
     landmark: row.landmark,
     formattedAddress: row.formatted_address,
+    latitude: toNumber(row.latitude ?? null),
+    longitude: toNumber(row.longitude ?? null),
+    isDefault: row.is_default ?? false,
   };
 }
 

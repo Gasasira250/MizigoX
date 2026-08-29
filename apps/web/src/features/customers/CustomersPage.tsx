@@ -1,167 +1,173 @@
-import type { CustomerPayload } from '@mizigox/shared';
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import { ApiError, apiGet, apiPost } from '../../shared/api/client';
+import type { CustomerLifecycleStatus, CustomerPayload, CustomerSortField } from '@mizigox/shared';
+import {
+  canCreateCustomers,
+  canUpdateCustomers,
+  COUNTRIES,
+  CUSTOMER_LIFECYCLE_STATUSES,
+  CUSTOMER_TYPES,
+  customerStatusLabel,
+  customerTypeLabel,
+} from '@mizigox/shared';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiGetWithMeta, apiPost } from '../../shared/api/client';
+import { useAuth } from '../../shared/auth/AuthProvider';
+import { StatusBadge } from '../../shared/ui/StatusBadge';
+import { useToast } from '../../shared/ui/ToastProvider';
+import { formatApiError, formatDate, locationLabel } from './form-utils';
 
 export function CustomersPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { notify } = useToast();
+  const canCreate = canCreateCustomers(user?.permissions);
+  const canUpdate = canUpdateCustomers(user?.permissions);
   const [customers, setCustomers] = useState<CustomerPayload[]>([]);
   const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<CustomerLifecycleStatus | ''>('');
+  const [customerType, setCustomerType] = useState('');
+  const [countryCode, setCountryCode] = useState('');
+  const [sort, setSort] = useState<CustomerSortField>('createdAt');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [street, setStreet] = useState('');
-  const [district, setDistrict] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
-  async function load(search = query) {
+  async function load(nextPage = page) {
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams({
+      page: String(nextPage),
+      pageSize: String(pageSize),
+      sort,
+      order,
+    });
+    if (query.trim()) params.set('q', query.trim());
+    if (status) params.set('status', status);
+    if (customerType) params.set('customerType', customerType);
+    if (countryCode) params.set('countryCode', countryCode);
     try {
-      const data = await apiGet<CustomerPayload[]>(`/customers?q=${encodeURIComponent(search)}`);
-      setCustomers(data);
+      const result = await apiGetWithMeta<CustomerPayload[]>(`/customers?${params.toString()}`);
+      setCustomers(result.data);
+      setTotal(result.meta.total ?? result.data.length);
+      setPage(result.meta.page ?? nextPage);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Unable to load customers');
+      setError(formatApiError(cause, 'Unable to load customers'));
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    void load('');
+    void load(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sort, order, status, customerType, countryCode]);
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    const [firstName, ...rest] = contactName.trim().split(' ');
+  async function toggleStatus(customer: CustomerPayload) {
     try {
-      await apiPost('/customers', {
-        name,
-        email: email || undefined,
-        countryCode: 'RW',
-        primaryContact: firstName
-          ? { firstName, lastName: rest.join(' ') || firstName }
-          : undefined,
-        primaryAddress: street
-          ? { countryCode: 'RW', streetLine1: street, adminArea2: district || undefined }
-          : undefined,
-      });
-      setShowForm(false);
-      setName('');
-      setEmail('');
-      setContactName('');
-      setStreet('');
-      setDistrict('');
-      await load('');
+      await apiPost(
+        `/customers/${customer.id}/${customer.status === 'ACTIVE' ? 'deactivate' : 'activate'}`,
+      );
+      notify(
+        customer.status === 'ACTIVE'
+          ? `${customer.name} was deactivated.`
+          : `${customer.name} was activated.`,
+      );
+      await load(page);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Unable to create customer');
-    } finally {
-      setSubmitting(false);
+      notify(formatApiError(cause, 'Unable to update customer status'), 'error');
     }
   }
 
+  function toggleSort(field: CustomerSortField) {
+    if (sort === field) {
+      setOrder((current) => (current === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+    setSort(field);
+    setOrder(field === 'name' ? 'asc' : 'desc');
+  }
+
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 3</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 4</p>
           <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">Customers</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Customer organizations stored in PostgreSQL.
+          <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            Manage shipper organizations, contacts, and service locations across Rwanda and East
+            Africa.
           </p>
         </div>
-        <button
-          type="button"
-          className="rounded-md bg-[#12355b] px-4 py-2 text-sm font-medium text-white"
-          onClick={() => setShowForm(true)}
-        >
-          New customer
-        </button>
+        {canCreate ? (
+          <Link
+            className="rounded-md bg-[#12355b] px-4 py-2 text-center text-sm font-medium text-white hover:bg-[#0d2743]"
+            to="/admin/customers/new"
+          >
+            Add customer
+          </Link>
+        ) : null}
       </div>
 
-      {showForm ? (
-        <form
-          className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 md:grid-cols-2"
-          onSubmit={(event) => void onSubmit(event)}
-        >
-          <label className="text-sm font-medium">
-            Organization name
-            <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </label>
-          <label className="text-sm font-medium">
-            Email
-            <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label className="text-sm font-medium">
-            Primary contact
-            <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-              value={contactName}
-              onChange={(e) => setContactName(e.target.value)}
-              placeholder="Jean Habimana"
-            />
-          </label>
-          <label className="text-sm font-medium">
-            District
-            <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-              value={district}
-              onChange={(e) => setDistrict(e.target.value)}
-              placeholder="Gasabo"
-            />
-          </label>
-          <label className="text-sm font-medium md:col-span-2">
-            Street address
-            <input
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-              value={street}
-              onChange={(e) => setStreet(e.target.value)}
-            />
-          </label>
-          <div className="flex gap-2 md:col-span-2">
-            <button
-              className="rounded-md bg-[#12355b] px-4 py-2 text-sm text-white"
-              disabled={submitting}
-              type="submit"
-            >
-              {submitting ? 'Saving…' : 'Create customer'}
-            </button>
-            <button
-              className="rounded-md border px-4 py-2 text-sm"
-              type="button"
-              onClick={() => setShowForm(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      ) : null}
-
-      <div className="flex gap-2">
+      <form
+        className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void load(1);
+        }}
+      >
         <input
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          placeholder="Search customers"
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm md:col-span-2"
+          placeholder="Search name, reference, email, phone, or tax ID"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <button
-          className="rounded-md border px-3 py-2 text-sm"
-          type="button"
-          onClick={() => void load()}
+        <select
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          value={status}
+          onChange={(event) => setStatus(event.target.value as CustomerLifecycleStatus | '')}
         >
-          Search
-        </button>
-      </div>
+          <option value="">All statuses</option>
+          {CUSTOMER_LIFECYCLE_STATUSES.map((item) => (
+            <option key={item} value={item}>
+              {customerStatusLabel(item)}
+            </option>
+          ))}
+        </select>
+        <select
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+          value={customerType}
+          onChange={(event) => setCustomerType(event.target.value)}
+        >
+          <option value="">All types</option>
+          {CUSTOMER_TYPES.map((item) => (
+            <option key={item} value={item}>
+              {customerTypeLabel(item)}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-2">
+          <select
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            value={countryCode}
+            onChange={(event) => setCountryCode(event.target.value)}
+          >
+            <option value="">All countries</option>
+            {COUNTRIES.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.name}
+              </option>
+            ))}
+          </select>
+          <button className="rounded-md border px-3 py-2 text-sm" type="submit">
+            Search
+          </button>
+        </div>
+      </form>
 
       {error ? (
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
@@ -171,39 +177,176 @@ export function CustomersPage() {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-slate-50 text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Country</th>
-              <th className="px-4 py-3 font-medium">Currency</th>
-              <th className="px-4 py-3 font-medium">Contacts</th>
+              <SortHeader
+                label="Reference"
+                field="customerReference"
+                current={sort}
+                order={order}
+                onClick={toggleSort}
+              />
+              <SortHeader
+                label="Customer"
+                field="name"
+                current={sort}
+                order={order}
+                onClick={toggleSort}
+              />
+              <th className="px-4 py-3 font-medium">Type</th>
+              <SortHeader
+                label="Status"
+                field="status"
+                current={sort}
+                order={order}
+                onClick={toggleSort}
+              />
+              <th className="px-4 py-3 font-medium">Contact</th>
+              <SortHeader
+                label="Location"
+                field="city"
+                current={sort}
+                order={order}
+                onClick={toggleSort}
+              />
+              <SortHeader
+                label="Created"
+                field="createdAt"
+                current={sort}
+                order={order}
+                onClick={toggleSort}
+              />
+              <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {customers.length === 0 ? (
+            {loading ? (
               <tr>
-                <td className="px-4 py-6 text-slate-500" colSpan={4}>
-                  No customers yet.
+                <td className="px-4 py-8 text-slate-500" colSpan={8}>
+                  Loading customers…
+                </td>
+              </tr>
+            ) : customers.length === 0 ? (
+              <tr>
+                <td className="px-4 py-8 text-slate-500" colSpan={8}>
+                  No customers match these filters. Add a customer to start booking freight.
                 </td>
               </tr>
             ) : (
               customers.map((customer) => (
-                <tr key={customer.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3">
-                    <Link
-                      className="font-medium text-[#12355b] hover:underline"
-                      to={`/admin/customers/${customer.id}`}
-                    >
-                      {customer.name}
-                    </Link>
+                <tr
+                  key={customer.id}
+                  className="cursor-pointer border-t border-slate-100 hover:bg-slate-50"
+                  onClick={() => navigate(`/admin/customers/${customer.id}`)}
+                >
+                  <td className="px-4 py-3 font-medium text-[#12355b]">
+                    {customer.customerReference}
                   </td>
-                  <td className="px-4 py-3">{customer.countryCode}</td>
-                  <td className="px-4 py-3">{customer.defaultCurrencyCode}</td>
-                  <td className="px-4 py-3">{customer.contacts.length}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-slate-900">{customer.name}</div>
+                    <div className="text-xs text-slate-500">{customer.email ?? 'No email'}</div>
+                  </td>
+                  <td className="px-4 py-3">{customerTypeLabel(customer.customerType)}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={customer.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div>{customer.primaryContactName ?? '—'}</div>
+                    <div className="text-xs text-slate-500">{customer.phoneE164 ?? 'No phone'}</div>
+                  </td>
+                  <td className="px-4 py-3">{locationLabel(customer)}</td>
+                  <td className="px-4 py-3">{formatDate(customer.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <div
+                      className="flex flex-wrap gap-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Link
+                        className="text-[#12355b] hover:underline"
+                        to={`/admin/customers/${customer.id}`}
+                      >
+                        View
+                      </Link>
+                      {canUpdate ? (
+                        <>
+                          <Link
+                            className="text-teal-800 hover:underline"
+                            to={`/admin/customers/${customer.id}/edit`}
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            type="button"
+                            className="text-slate-600 hover:underline"
+                            onClick={() => void toggleStatus(customer)}
+                          >
+                            {customer.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      <div className="flex items-center justify-between text-sm text-slate-600">
+        <p>
+          {total} customer{total === 1 ? '' : 's'}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="rounded-md border px-3 py-1.5 disabled:opacity-40"
+            disabled={page <= 1 || loading}
+            onClick={() => void load(page - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {pageCount}
+          </span>
+          <button
+            type="button"
+            className="rounded-md border px-3 py-1.5 disabled:opacity-40"
+            disabled={page >= pageCount || loading}
+            onClick={() => void load(page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function SortHeader({
+  label,
+  field,
+  current,
+  order,
+  onClick,
+}: {
+  label: string;
+  field: CustomerSortField;
+  current: CustomerSortField;
+  order: 'asc' | 'desc';
+  onClick: (field: CustomerSortField) => void;
+}) {
+  const active = current === field;
+  return (
+    <th className="px-4 py-3 font-medium">
+      <button
+        type="button"
+        className="inline-flex items-center gap-1"
+        onClick={() => onClick(field)}
+      >
+        {label}
+        <span className="text-xs text-slate-400">
+          {active ? (order === 'asc' ? '↑' : '↓') : '↕'}
+        </span>
+      </button>
+    </th>
   );
 }

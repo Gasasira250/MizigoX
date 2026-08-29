@@ -19,3 +19,21 @@ export function requirePermission(...permissions: PermissionCode[]) {
     next();
   };
 }
+
+export function requireAnyPermission(...permissions: PermissionCode[]) {
+  return (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.auth) {
+      next(unauthorized());
+      return;
+    }
+
+    const granted = new Set(req.auth.permissions);
+    const allowed = permissions.some((permission) => granted.has(permission));
+    if (!allowed) {
+      next(forbidden());
+      return;
+    }
+
+    next();
+  };
+}
