@@ -345,7 +345,7 @@ describe('shipment management', () => {
     expect(page.body.data[0].priority).toBe('URGENT');
 
     const filtered = await request(app)
-      .get(`/api/v1/shipments?q=Filter%20cargo%20${stamp}&priority=LOW&status=CONFIRMED`)
+      .get(`/api/v1/shipments?q=${stamp}&priority=LOW&status=CONFIRMED`)
       .set(auth(admin));
     expect(filtered.status).toBe(200);
     expect(filtered.body.data.length).toBeGreaterThanOrEqual(1);

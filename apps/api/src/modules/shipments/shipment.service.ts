@@ -546,13 +546,13 @@ export async function updateShipmentStatus(
     await client.query(
       `
         UPDATE shipments
-        SET status = $2,
+        SET status = $2::shipment_status,
             actual_pickup_at = CASE
-              WHEN $2 = 'PICKED_UP' THEN COALESCE(actual_pickup_at, now())
+              WHEN $2::shipment_status = 'PICKED_UP' THEN COALESCE(actual_pickup_at, now())
               ELSE actual_pickup_at
             END,
             actual_delivery_at = CASE
-              WHEN $2 = 'DELIVERED' THEN COALESCE(actual_delivery_at, now())
+              WHEN $2::shipment_status = 'DELIVERED' THEN COALESCE(actual_delivery_at, now())
               ELSE actual_delivery_at
             END,
             updated_at = now()
@@ -1020,7 +1020,9 @@ async function insertEvent(
         shipment_id, event_type, previous_status, status, note, actor_user_id,
         location_label, latitude, longitude, metadata
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb)
+      VALUES (
+        $1, $2, $3::shipment_status, $4::shipment_status, $5, $6, $7, $8, $9, $10::jsonb
+      )
     `,
     [
       input.shipmentId,
