@@ -1,11 +1,12 @@
 import type { CustomerPayload, ShipmentPayload, ShipmentStatus } from '@mizigox/shared';
 import { SHIPMENT_STATUSES } from '@mizigox/shared';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ApiError, apiGet } from '../../shared/api/client';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 
 export function ShipmentsPage({ basePath }: { basePath: '/admin' | '/portal' }) {
+  const navigate = useNavigate();
   const [shipments, setShipments] = useState<ShipmentPayload[]>([]);
   const [customers, setCustomers] = useState<CustomerPayload[]>([]);
   const [query, setQuery] = useState('');
@@ -105,15 +106,12 @@ export function ShipmentsPage({ basePath }: { basePath: '/admin' | '/portal' }) 
               </tr>
             ) : (
               shipments.map((shipment) => (
-                <tr key={shipment.id} className="border-t border-slate-100">
-                  <td className="px-4 py-3">
-                    <Link
-                      className="font-medium text-[#12355b] hover:underline"
-                      to={`${basePath}/shipments/${shipment.id}`}
-                    >
-                      {shipment.reference}
-                    </Link>
-                  </td>
+                <tr
+                  key={shipment.id}
+                  className="cursor-pointer border-t border-slate-100 hover:bg-slate-50"
+                  onClick={() => navigate(`${basePath}/shipments/${shipment.id}`)}
+                >
+                  <td className="px-4 py-3 font-medium text-[#12355b]">{shipment.reference}</td>
                   <td className="px-4 py-3">{shipment.customerName}</td>
                   <td className="px-4 py-3">
                     {shipment.origin?.formattedAddress ?? shipment.originCountryCode}
