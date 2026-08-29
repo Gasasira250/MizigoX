@@ -1,6 +1,6 @@
 # MizigoX System Architecture
 
-**Status:** Phase 1 complete. Phase 2 is identity/authentication hardening (invite-based registration). Operational modules still wait for later approval.  
+**Status:** Phases 1–2 complete. Phase 3 implements customers and shipments. Transport, billing, and tracking still wait for later approval.  
 **Audience:** Product owner, engineering  
 **First market:** Rwanda  
 **Later markets:** Uganda, Kenya, Tanzania, Burundi, South Sudan, DRC

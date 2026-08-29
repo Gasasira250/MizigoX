@@ -1,6 +1,11 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
+import { CustomerDetailPage } from '../features/customers/CustomerDetailPage';
+import { CustomersPage } from '../features/customers/CustomersPage';
+import { ShipmentDetailPage } from '../features/shipments/ShipmentDetailPage';
+import { ShipmentFormPage } from '../features/shipments/ShipmentFormPage';
+import { ShipmentsPage } from '../features/shipments/ShipmentsPage';
 import { FoundationPage } from '../features/system/FoundationPage';
 import { LaterPhasePage } from '../features/system/LaterPhasePage';
 import { useAuth } from '../shared/auth/AuthProvider';
@@ -57,21 +62,20 @@ export function AppRouter() {
       <Route element={<RequireAuth allow={['admin']} />}>
         <Route element={<AdminShell />}>
           <Route path="/admin" element={<FoundationPage />} />
+          <Route path="/admin/customers" element={<CustomersPage />} />
+          <Route path="/admin/customers/:customerId" element={<CustomerDetailPage />} />
+          <Route path="/admin/shipments" element={<ShipmentsPage basePath="/admin" />} />
+          <Route path="/admin/shipments/new" element={<ShipmentFormPage basePath="/admin" />} />
+          <Route path="/admin/shipments/:shipmentId" element={<ShipmentDetailPage basePath="/admin" />} />
         </Route>
       </Route>
 
       <Route element={<RequireAuth allow={['portal']} />}>
         <Route element={<PortalShell title="Customer portal" />}>
-          <Route
-            path="/portal"
-            element={
-              <LaterPhasePage
-                title="Customer portal"
-                phase="Later phase"
-                description="Customers will create shipments, track cargo, and view invoices here once those modules exist."
-              />
-            }
-          />
+          <Route path="/portal" element={<Navigate to="/portal/shipments" replace />} />
+          <Route path="/portal/shipments" element={<ShipmentsPage basePath="/portal" />} />
+          <Route path="/portal/shipments/new" element={<ShipmentFormPage basePath="/portal" />} />
+          <Route path="/portal/shipments/:shipmentId" element={<ShipmentDetailPage basePath="/portal" />} />
         </Route>
       </Route>
 
@@ -82,7 +86,7 @@ export function AppRouter() {
             element={
               <LaterPhasePage
                 title="Driver portal"
-                phase="Phase 3"
+                phase="Later phase"
                 description="Drivers will see assigned trips, update status, and upload proof of delivery here."
               />
             }

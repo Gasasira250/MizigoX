@@ -26,6 +26,23 @@ export async function createCustomerUser(input: {
     throw new Error('Failed to create customer organization');
   }
 
+  const operator = await pool.query<{ id: string }>(
+    `
+      SELECT id FROM organizations
+      WHERE type = 'OPERATOR' AND deleted_at IS NULL
+      ORDER BY created_at
+      LIMIT 1
+    `,
+  );
+  await pool.query(
+    `
+      INSERT INTO customer_profiles (organization_id, preferred_operator_organization_id)
+      VALUES ($1, $2)
+      ON CONFLICT (organization_id) DO NOTHING
+    `,
+    [organizationId, operator.rows[0]?.id ?? null],
+  );
+
   const user = await pool.query<{ id: string }>(
     `
       INSERT INTO users (

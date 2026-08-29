@@ -48,6 +48,8 @@ Sign in with `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from your local `.env`.
 
 New users cannot self-register. A user with `users.manage` creates an invite; the invitee opens `/register?token=…` and sets a password.
 
+Staff can create customer organizations and book shipments. Customer users use `/portal/shipments` against the same API and tenant rules. References look like `MX-RW-2026-00001`.
+
 ## Checks
 
 ```bash
