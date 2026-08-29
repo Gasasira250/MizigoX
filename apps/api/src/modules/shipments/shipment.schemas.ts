@@ -1,10 +1,10 @@
 import { SHIPMENT_STATUSES } from '@mizigox/shared';
 import { z } from 'zod';
-import { addressInputSchema } from '../customers/customer.schemas.js';
+import { addressFieldsSchema } from '../customers/customer.schemas.js';
 
 const addressRefSchema = z.union([
   z.object({ addressId: z.string().uuid() }),
-  addressInputSchema.extend({
+  addressFieldsSchema.extend({
     streetLine1: z.string().trim().min(1).max(200),
     countryCode: z.string().trim().length(2).default('RW'),
   }),
