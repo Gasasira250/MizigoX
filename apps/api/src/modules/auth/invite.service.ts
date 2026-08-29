@@ -49,10 +49,9 @@ export async function createInvite(
     throw unprocessable('That role cannot be assigned to this organization type');
   }
 
-  const role = await pool.query<{ id: string }>(
-    'SELECT id FROM roles WHERE code = $1',
-    [input.role],
-  );
+  const role = await pool.query<{ id: string }>('SELECT id FROM roles WHERE code = $1', [
+    input.role,
+  ]);
   const roleId = role.rows[0]?.id;
   if (!roleId) {
     throw unprocessable('Unknown role');

@@ -51,7 +51,9 @@ export function ChangePasswordPanel() {
           />
         </label>
         {error ? (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">{error}</p>
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">
+            {error}
+          </p>
         ) : null}
         <div className="md:col-span-2">
           <button

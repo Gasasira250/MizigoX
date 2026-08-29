@@ -123,7 +123,9 @@ export function RegisterPage() {
                 minLength={12}
               />
             </label>
-            <p className="text-xs text-slate-500">At least 12 characters, including a letter and a number.</p>
+            <p className="text-xs text-slate-500">
+              At least 12 characters, including a letter and a number.
+            </p>
 
             {error ? (
               <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
