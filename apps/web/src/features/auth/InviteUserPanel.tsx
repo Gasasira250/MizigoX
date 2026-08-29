@@ -147,8 +147,11 @@ export function InviteUserPanel() {
       </form>
 
       {inviteUrl ? (
-        <p className="mt-4 break-all rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-900">
-          Invite link: {inviteUrl}
+        <p className="mt-4 rounded-md bg-teal-50 px-3 py-2 text-sm text-teal-900">
+          Invite link:{' '}
+          <a className="break-all font-medium underline" href={inviteUrl}>
+            {inviteUrl}
+          </a>
         </p>
       ) : null}
     </section>
