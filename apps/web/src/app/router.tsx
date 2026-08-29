@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { CustomerDetailPage } from '../features/customers/CustomerDetailPage';
+import { CustomerFormPage } from '../features/customers/CustomerFormPage';
 import { CustomersPage } from '../features/customers/CustomersPage';
 import { ShipmentDetailPage } from '../features/shipments/ShipmentDetailPage';
 import { ShipmentFormPage } from '../features/shipments/ShipmentFormPage';
@@ -63,7 +64,9 @@ export function AppRouter() {
         <Route element={<AdminShell />}>
           <Route path="/admin" element={<FoundationPage />} />
           <Route path="/admin/customers" element={<CustomersPage />} />
+          <Route path="/admin/customers/new" element={<CustomerFormPage />} />
           <Route path="/admin/customers/:customerId" element={<CustomerDetailPage />} />
+          <Route path="/admin/customers/:customerId/edit" element={<CustomerFormPage />} />
           <Route path="/admin/shipments" element={<ShipmentsPage basePath="/admin" />} />
           <Route path="/admin/shipments/new" element={<ShipmentFormPage basePath="/admin" />} />
           <Route

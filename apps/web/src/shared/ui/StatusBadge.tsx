@@ -1,8 +1,8 @@
 export function StatusBadge({ status }: { status: string }) {
   const tone =
-    status === 'DELIVERED'
+    status === 'DELIVERED' || status === 'ACTIVE'
       ? 'bg-emerald-50 text-emerald-800'
-      : status === 'CANCELLED'
+      : status === 'CANCELLED' || status === 'INACTIVE'
         ? 'bg-slate-100 text-slate-600'
         : status === 'EXCEPTION'
           ? 'bg-red-50 text-red-700'
