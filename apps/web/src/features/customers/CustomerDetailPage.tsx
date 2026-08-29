@@ -14,7 +14,9 @@ export function CustomerDetailPage() {
     }
     apiGet<CustomerPayload>(`/customers/${customerId}`)
       .then(setCustomer)
-      .catch((cause) => setError(cause instanceof ApiError ? cause.message : 'Unable to load customer'));
+      .catch((cause) =>
+        setError(cause instanceof ApiError ? cause.message : 'Unable to load customer'),
+      );
   }, [customerId]);
 
   if (error) {

@@ -41,10 +41,14 @@ export function ShipmentsPage({ basePath }: { basePath: '/admin' | '/portal' }) 
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 3</p>
           <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">Shipments</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Live bookings with MX-RW references. {customers.length > 0 ? `${customers.length} customers available.` : ''}
+            Live bookings with MX-RW references.{' '}
+            {customers.length > 0 ? `${customers.length} customers available.` : ''}
           </p>
         </div>
-        <Link className="rounded-md bg-[#12355b] px-4 py-2 text-sm font-medium text-white" to={`${basePath}/shipments/new`}>
+        <Link
+          className="rounded-md bg-[#12355b] px-4 py-2 text-sm font-medium text-white"
+          to={`${basePath}/shipments/new`}
+        >
           New shipment
         </Link>
       </div>
@@ -68,12 +72,18 @@ export function ShipmentsPage({ basePath }: { basePath: '/admin' | '/portal' }) 
             </option>
           ))}
         </select>
-        <button className="rounded-md border px-3 py-2 text-sm" type="button" onClick={() => void load()}>
+        <button
+          className="rounded-md border px-3 py-2 text-sm"
+          type="button"
+          onClick={() => void load()}
+        >
           Filter
         </button>
       </div>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="min-w-full text-left text-sm">
@@ -97,12 +107,17 @@ export function ShipmentsPage({ basePath }: { basePath: '/admin' | '/portal' }) 
               shipments.map((shipment) => (
                 <tr key={shipment.id} className="border-t border-slate-100">
                   <td className="px-4 py-3">
-                    <Link className="font-medium text-[#12355b] hover:underline" to={`${basePath}/shipments/${shipment.id}`}>
+                    <Link
+                      className="font-medium text-[#12355b] hover:underline"
+                      to={`${basePath}/shipments/${shipment.id}`}
+                    >
                       {shipment.reference}
                     </Link>
                   </td>
                   <td className="px-4 py-3">{shipment.customerName}</td>
-                  <td className="px-4 py-3">{shipment.origin?.formattedAddress ?? shipment.originCountryCode}</td>
+                  <td className="px-4 py-3">
+                    {shipment.origin?.formattedAddress ?? shipment.originCountryCode}
+                  </td>
                   <td className="px-4 py-3">
                     {shipment.destination?.formattedAddress ?? shipment.destinationCountryCode}
                   </td>

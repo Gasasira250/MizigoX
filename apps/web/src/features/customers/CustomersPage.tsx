@@ -17,9 +17,7 @@ export function CustomersPage() {
 
   async function load(search = query) {
     try {
-      const data = await apiGet<CustomerPayload[]>(
-        `/customers?q=${encodeURIComponent(search)}`,
-      );
+      const data = await apiGet<CustomerPayload[]>(`/customers?q=${encodeURIComponent(search)}`);
       setCustomers(data);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Unable to load customers');
@@ -68,7 +66,9 @@ export function CustomersPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Phase 3</p>
           <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">Customers</h1>
-          <p className="mt-2 text-sm text-slate-600">Customer organizations stored in PostgreSQL.</p>
+          <p className="mt-2 text-sm text-slate-600">
+            Customer organizations stored in PostgreSQL.
+          </p>
         </div>
         <button
           type="button"
@@ -80,32 +80,67 @@ export function CustomersPage() {
       </div>
 
       {showForm ? (
-        <form className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 md:grid-cols-2" onSubmit={(event) => void onSubmit(event)}>
+        <form
+          className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 md:grid-cols-2"
+          onSubmit={(event) => void onSubmit(event)}
+        >
           <label className="text-sm font-medium">
             Organization name
-            <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </label>
           <label className="text-sm font-medium">
             Email
-            <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </label>
           <label className="text-sm font-medium">
             Primary contact
-            <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Jean Habimana" />
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              placeholder="Jean Habimana"
+            />
           </label>
           <label className="text-sm font-medium">
             District
-            <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={district} onChange={(e) => setDistrict(e.target.value)} placeholder="Gasabo" />
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+              placeholder="Gasabo"
+            />
           </label>
           <label className="text-sm font-medium md:col-span-2">
             Street address
-            <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={street} onChange={(e) => setStreet(e.target.value)} />
+            <input
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+            />
           </label>
           <div className="flex gap-2 md:col-span-2">
-            <button className="rounded-md bg-[#12355b] px-4 py-2 text-sm text-white" disabled={submitting} type="submit">
+            <button
+              className="rounded-md bg-[#12355b] px-4 py-2 text-sm text-white"
+              disabled={submitting}
+              type="submit"
+            >
               {submitting ? 'Saving…' : 'Create customer'}
             </button>
-            <button className="rounded-md border px-4 py-2 text-sm" type="button" onClick={() => setShowForm(false)}>
+            <button
+              className="rounded-md border px-4 py-2 text-sm"
+              type="button"
+              onClick={() => setShowForm(false)}
+            >
               Cancel
             </button>
           </div>
@@ -119,12 +154,18 @@ export function CustomersPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        <button className="rounded-md border px-3 py-2 text-sm" type="button" onClick={() => void load()}>
+        <button
+          className="rounded-md border px-3 py-2 text-sm"
+          type="button"
+          onClick={() => void load()}
+        >
           Search
         </button>
       </div>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="min-w-full text-left text-sm">
@@ -147,7 +188,10 @@ export function CustomersPage() {
               customers.map((customer) => (
                 <tr key={customer.id} className="border-t border-slate-100">
                   <td className="px-4 py-3">
-                    <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/customers/${customer.id}`}>
+                    <Link
+                      className="font-medium text-[#12355b] hover:underline"
+                      to={`/admin/customers/${customer.id}`}
+                    >
                       {customer.name}
                     </Link>
                   </td>

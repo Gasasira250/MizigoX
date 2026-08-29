@@ -94,9 +94,9 @@ describe('customers and shipments', () => {
       .get('/api/v1/shipments?q=Coffee&status=BOOKED')
       .set(auth(admin));
     expect(listed.status).toBe(200);
-    expect(
-      listed.body.data.some((row: { id: string }) => row.id === shipment.body.data.id),
-    ).toBe(true);
+    expect(listed.body.data.some((row: { id: string }) => row.id === shipment.body.data.id)).toBe(
+      true,
+    );
 
     const moved = await request(app)
       .post(`/api/v1/shipments/${shipment.body.data.id}/status`)
@@ -163,9 +163,12 @@ describe('customers and shipments', () => {
 
     const list = await request(app).get('/api/v1/shipments').set(auth(token));
     expect(list.status).toBe(200);
-    expect(list.body.data.every((row: { customerOrganizationId: string }) => row.customerOrganizationId === customer.organizationId)).toBe(
-      true,
-    );
+    expect(
+      list.body.data.every(
+        (row: { customerOrganizationId: string }) =>
+          row.customerOrganizationId === customer.organizationId,
+      ),
+    ).toBe(true);
     expect(
       list.body.data.some((row: { id: string }) => row.id === otherShipment.body.data.id),
     ).toBe(false);
