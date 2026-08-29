@@ -1,0 +1,103 @@
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { LoginPage } from '../features/auth/LoginPage';
+import { FoundationPage } from '../features/system/FoundationPage';
+import { LaterPhasePage } from '../features/system/LaterPhasePage';
+import { useAuth } from '../shared/auth/AuthProvider';
+import { homePathFor } from '../shared/auth/home-path';
+import { AdminShell } from './shells/AdminShell';
+import { PortalShell } from './shells/PortalShell';
+
+function GuestOnly() {
+  const { ready, user } = useAuth();
+  if (!ready) {
+    return <BootScreen />;
+  }
+  if (user) {
+    return <Navigate to={homePathFor(user)} replace />;
+  }
+  return <Outlet />;
+}
+
+function RequireAuth({ allow }: { allow: Array<'admin' | 'portal' | 'driver'> }) {
+  const { ready, user } = useAuth();
+  if (!ready) {
+    return <BootScreen />;
+  }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const destination = homePathFor(user);
+  const current =
+    destination === '/admin' ? 'admin' : destination === '/portal' ? 'portal' : 'driver';
+  if (!allow.includes(current)) {
+    return <Navigate to={destination} replace />;
+  }
+
+  return <Outlet />;
+}
+
+function BootScreen() {
+  return (
+    <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
+      Restoring secure session…
+    </div>
+  );
+}
+
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<LoginPage />} />
+      </Route>
+
+      <Route element={<RequireAuth allow={['admin']} />}>
+        <Route element={<AdminShell />}>
+          <Route path="/admin" element={<FoundationPage />} />
+        </Route>
+      </Route>
+
+      <Route element={<RequireAuth allow={['portal']} />}>
+        <Route element={<PortalShell title="Customer portal" />}>
+          <Route
+            path="/portal"
+            element={
+              <LaterPhasePage
+                title="Customer portal"
+                phase="Phase 2"
+                description="Customers will create shipments, track cargo, and view invoices here once those modules exist."
+              />
+            }
+          />
+        </Route>
+      </Route>
+
+      <Route element={<RequireAuth allow={['driver']} />}>
+        <Route element={<PortalShell title="Driver portal" />}>
+          <Route
+            path="/driver"
+            element={
+              <LaterPhasePage
+                title="Driver portal"
+                phase="Phase 3"
+                description="Drivers will see assigned trips, update status, and upload proof of delivery here."
+              />
+            }
+          />
+        </Route>
+      </Route>
+
+      <Route path="/" element={<RootRedirect />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+function RootRedirect() {
+  const { ready, user } = useAuth();
+  if (!ready) {
+    return <BootScreen />;
+  }
+  return <Navigate to={homePathFor(user)} replace />;
+}

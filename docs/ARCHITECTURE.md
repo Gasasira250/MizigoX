@@ -1,6 +1,6 @@
 # MizigoX System Architecture
 
-**Status:** Proposed — awaiting approval before Phase 1 implementation  
+**Status:** Approved — Phase 1 foundation is being implemented. Phase 2 waits for a separate approval.  
 **Audience:** Product owner, engineering  
 **First market:** Rwanda  
 **Later markets:** Uganda, Kenya, Tanzania, Burundi, South Sudan, DRC
