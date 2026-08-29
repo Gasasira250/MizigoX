@@ -86,12 +86,12 @@ describe('customers and shipments', () => {
 
     expect(shipment.status).toBe(201);
     expect(shipment.body.data.reference).toMatch(/^MX-RW-\d{4}-\d{5}$/);
-    expect(shipment.body.data.status).toBe('BOOKED');
-    expect(shipment.body.data.events[0].type).toBe('BOOKED');
+    expect(shipment.body.data.status).toBe('CONFIRMED');
+    expect(shipment.body.data.events[0].type).toBe('CREATED');
     expect(shipment.body.data.items).toHaveLength(1);
 
     const listed = await request(app)
-      .get('/api/v1/shipments?q=Coffee&status=BOOKED')
+      .get('/api/v1/shipments?q=Coffee&status=CONFIRMED')
       .set(auth(admin));
     expect(listed.status).toBe(200);
     expect(listed.body.data.some((row: { id: string }) => row.id === shipment.body.data.id)).toBe(
@@ -101,15 +101,15 @@ describe('customers and shipments', () => {
     const moved = await request(app)
       .post(`/api/v1/shipments/${shipment.body.data.id}/status`)
       .set(auth(admin))
-      .send({ status: 'IN_TRANSIT', note: 'Left Kigali' });
+      .send({ status: 'READY_FOR_PICKUP', note: 'Left Kigali' });
     expect(moved.status).toBe(200);
-    expect(moved.body.data.status).toBe('IN_TRANSIT');
+    expect(moved.body.data.status).toBe('READY_FOR_PICKUP');
     expect(moved.body.data.events.length).toBeGreaterThan(1);
 
     const invalid = await request(app)
       .post(`/api/v1/shipments/${shipment.body.data.id}/status`)
       .set(auth(admin))
-      .send({ status: 'BOOKED' });
+      .send({ status: 'DRAFT' });
     expect(invalid.status).toBe(422);
     expect(invalid.body.error.code).toBe('SHIPMENT_INVALID_TRANSITION');
   });

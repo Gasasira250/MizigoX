@@ -1,8 +1,14 @@
-import type { AddressPayload, ContactPayload, CustomerPayload } from '@mizigox/shared';
+import type {
+  AddressPayload,
+  ContactPayload,
+  CustomerPayload,
+  ShipmentPayload,
+} from '@mizigox/shared';
 import {
   ADDRESS_TYPES,
   addressTypeLabel,
   canDeleteCustomers,
+  canReadShipments,
   canUpdateCustomers,
   CONTACT_STATUSES,
   customerStatusLabel,
@@ -193,11 +199,9 @@ export function CustomerDetailPage() {
         onDelete={(id) => setConfirm({ type: 'address', id })}
       />
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Placeholder
-          title="Shipment summary"
-          body="Booked, in-transit, and delivered shipments for this customer will appear here after the shipments module is connected."
-        />
+      <CustomerShipments customerId={customer.id} />
+
+      <section className="grid gap-4 lg:grid-cols-2">
         <Placeholder
           title="Invoice summary"
           body="Outstanding balances and recent invoices will appear here when billing is implemented."
@@ -630,6 +634,82 @@ function AddressesSection({
           </div>
         </form>
       ) : null}
+    </section>
+  );
+}
+
+function CustomerShipments({ customerId }: { customerId: string }) {
+  const { user } = useAuth();
+  const canRead = canReadShipments(user?.permissions);
+  const [shipments, setShipments] = useState<ShipmentPayload[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(canRead);
+
+  useEffect(() => {
+    if (!canRead) {
+      return;
+    }
+    apiGet<ShipmentPayload[]>(
+      `/shipments?customerId=${customerId}&pageSize=8&sort=createdAt&order=desc`,
+    )
+      .then(setShipments)
+      .catch((cause) => setError(formatApiError(cause, 'Unable to load shipments')))
+      .finally(() => setLoading(false));
+  }, [canRead, customerId]);
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-[#12355b]">Shipment history</h2>
+        {canRead ? (
+          <Link className="text-sm text-teal-800 hover:underline" to="/admin/shipments">
+            View all shipments
+          </Link>
+        ) : null}
+      </div>
+      {!canRead ? (
+        <p className="mt-3 text-sm text-slate-500">You do not have permission to view shipments.</p>
+      ) : loading ? (
+        <p className="mt-3 text-sm text-slate-500">Loading shipments…</p>
+      ) : error ? (
+        <p className="mt-3 text-sm text-red-700">{error}</p>
+      ) : shipments.length === 0 ? (
+        <p className="mt-3 text-sm text-slate-500">No shipments booked for this customer yet.</p>
+      ) : (
+        <div className="mt-4 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="text-slate-500">
+              <tr>
+                <th className="py-2 pr-4 font-medium">Reference</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 pr-4 font-medium">Priority</th>
+                <th className="py-2 pr-4 font-medium">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shipments.map((shipment) => (
+                <tr key={shipment.id} className="border-t border-slate-100">
+                  <td className="py-2 pr-4">
+                    <Link
+                      className="text-[#12355b] hover:underline"
+                      to={`/admin/shipments/${shipment.id}`}
+                    >
+                      {shipment.reference}
+                    </Link>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <StatusBadge status={shipment.status} />
+                  </td>
+                  <td className="py-2 pr-4">
+                    <StatusBadge status={shipment.priority} />
+                  </td>
+                  <td className="py-2 text-slate-600">{formatDate(shipment.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
