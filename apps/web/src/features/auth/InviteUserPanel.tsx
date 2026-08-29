@@ -27,10 +27,7 @@ export function InviteUserPanel() {
     }
 
     let cancelled = false;
-    Promise.all([
-      apiGet<OrganizationOption[]>('/organizations'),
-      apiGet<RoleOption[]>('/roles'),
-    ])
+    Promise.all([apiGet<OrganizationOption[]>('/organizations'), apiGet<RoleOption[]>('/roles')])
       .then(([orgs, roleOptions]) => {
         if (!cancelled) {
           setOrganizations(orgs);
@@ -134,7 +131,9 @@ export function InviteUserPanel() {
           />
         </label>
         {error ? (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">{error}</p>
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 md:col-span-2">
+            {error}
+          </p>
         ) : null}
         <div className="md:col-span-2">
           <button
