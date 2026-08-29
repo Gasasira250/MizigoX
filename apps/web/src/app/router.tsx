@@ -66,7 +66,10 @@ export function AppRouter() {
           <Route path="/admin/customers/:customerId" element={<CustomerDetailPage />} />
           <Route path="/admin/shipments" element={<ShipmentsPage basePath="/admin" />} />
           <Route path="/admin/shipments/new" element={<ShipmentFormPage basePath="/admin" />} />
-          <Route path="/admin/shipments/:shipmentId" element={<ShipmentDetailPage basePath="/admin" />} />
+          <Route
+            path="/admin/shipments/:shipmentId"
+            element={<ShipmentDetailPage basePath="/admin" />}
+          />
         </Route>
       </Route>
 
@@ -75,7 +78,10 @@ export function AppRouter() {
           <Route path="/portal" element={<Navigate to="/portal/shipments" replace />} />
           <Route path="/portal/shipments" element={<ShipmentsPage basePath="/portal" />} />
           <Route path="/portal/shipments/new" element={<ShipmentFormPage basePath="/portal" />} />
-          <Route path="/portal/shipments/:shipmentId" element={<ShipmentDetailPage basePath="/portal" />} />
+          <Route
+            path="/portal/shipments/:shipmentId"
+            element={<ShipmentDetailPage basePath="/portal" />}
+          />
         </Route>
       </Route>
 

@@ -4,7 +4,12 @@ import { asyncHandler } from '../../lib/async-handler.js';
 import { sendSuccess } from '../../lib/http.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/authorize.js';
-import { addressInputSchema, contactInputSchema, createCustomerSchema, listCustomersQuerySchema } from './customer.schemas.js';
+import {
+  addressInputSchema,
+  contactInputSchema,
+  createCustomerSchema,
+  listCustomersQuerySchema,
+} from './customer.schemas.js';
 import {
   addCustomerAddress,
   addCustomerContact,

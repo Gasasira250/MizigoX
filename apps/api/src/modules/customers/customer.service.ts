@@ -10,11 +10,7 @@ import type { createCustomerSchema, listCustomersQuerySchema } from './customer.
 type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 type ListCustomersQuery = z.infer<typeof listCustomersQuerySchema>;
 
-export async function createCustomer(
-  pool: Pool,
-  actor: AuthContext,
-  input: CreateCustomerInput,
-) {
+export async function createCustomer(pool: Pool, actor: AuthContext, input: CreateCustomerInput) {
   if (actor.orgType === 'CUSTOMER') {
     throw forbidden('Customer accounts cannot create other customer organizations');
   }
@@ -104,11 +100,13 @@ export async function createCustomer(
 
 export async function listCustomers(pool: Pool, actor: AuthContext, query: ListCustomersQuery) {
   const params: unknown[] = [];
-  const where = ['o.type = \'CUSTOMER\'', 'o.deleted_at IS NULL'];
+  const where = ["o.type = 'CUSTOMER'", 'o.deleted_at IS NULL'];
 
   if (actor.orgType === 'OPERATOR') {
     params.push(actor.orgId);
-    where.push(`(o.parent_organization_id = $${params.length} OR p.preferred_operator_organization_id = $${params.length})`);
+    where.push(
+      `(o.parent_organization_id = $${params.length} OR p.preferred_operator_organization_id = $${params.length})`,
+    );
   } else if (actor.orgType === 'CUSTOMER') {
     params.push(actor.orgId);
     where.push(`o.id = $${params.length}`);
@@ -116,7 +114,9 @@ export async function listCustomers(pool: Pool, actor: AuthContext, query: ListC
 
   if (query.q) {
     params.push(`%${query.q.toLowerCase()}%`);
-    where.push(`(lower(o.name) LIKE $${params.length} OR lower(coalesce(o.legal_name, '')) LIKE $${params.length})`);
+    where.push(
+      `(lower(o.name) LIKE $${params.length} OR lower(coalesce(o.legal_name, '')) LIKE $${params.length})`,
+    );
   }
 
   const count = await pool.query<{ total: string }>(

@@ -63,7 +63,9 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
         </p>
       </div>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 md:grid-cols-2">
         <div>

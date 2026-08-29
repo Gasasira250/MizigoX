@@ -1,8 +1,4 @@
-import {
-  canTransitionShipment,
-  type ShipmentPayload,
-  type ShipmentStatus,
-} from '@mizigox/shared';
+import { canTransitionShipment, type ShipmentPayload, type ShipmentStatus } from '@mizigox/shared';
 import type { Pool, PoolClient } from 'pg';
 import { insertAddress, mapAddress, toNumber, type AddressInput } from '../../lib/addresses.js';
 import { writeAudit } from '../../lib/audit.js';
@@ -19,11 +15,7 @@ type CreateShipmentInput = z.infer<typeof createShipmentSchema>;
 type ListShipmentsQuery = z.infer<typeof listShipmentsQuerySchema>;
 type StatusInput = z.infer<typeof updateShipmentStatusSchema>;
 
-export async function createShipment(
-  pool: Pool,
-  actor: AuthContext,
-  input: CreateShipmentInput,
-) {
+export async function createShipment(pool: Pool, actor: AuthContext, input: CreateShipmentInput) {
   const customerId = await resolveCustomerId(pool, actor, input.customerOrganizationId);
   const operatorId = await resolveOperatorForCustomer(pool, actor, customerId);
   const client = await pool.connect();
@@ -398,12 +390,7 @@ async function insertEvent(
   );
 }
 
-function applyTenantFilter(
-  actor: AuthContext,
-  where: string[],
-  params: unknown[],
-  alias: string,
-) {
+function applyTenantFilter(actor: AuthContext, where: string[], params: unknown[], alias: string) {
   if (actor.orgType === 'PLATFORM') {
     return;
   }
