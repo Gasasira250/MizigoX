@@ -13,6 +13,7 @@ import {
   fleetStatusLabel,
   type DocumentAlertWindow,
   type FleetDocumentPayload,
+  type FleetDocumentStatus,
 } from '@mizigox/shared';
 import { ApiError } from '../../shared/api/client';
 
@@ -107,7 +108,7 @@ export function emptyDocumentForm(documentType: string) {
     documentNumber: '',
     issuedAt: '',
     expiresAt: '',
-    status: 'VALID' as const,
+    status: 'VALID' as FleetDocumentStatus,
     storageKey: '',
     fileUrl: '',
     notes: '',
