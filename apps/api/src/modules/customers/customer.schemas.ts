@@ -127,6 +127,10 @@ export const updateCustomerSchema = z.object({
   status: z.enum(CUSTOMER_LIFECYCLE_STATUSES).optional(),
 });
 
+export const customerIdParamSchema = z.object({
+  customerId: z.string().uuid('Customer id must be a valid UUID'),
+});
+
 export const listCustomersQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
   status: z.enum(CUSTOMER_LIFECYCLE_STATUSES).optional(),

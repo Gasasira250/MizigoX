@@ -22,9 +22,11 @@ import {
   type CustomerFormState,
 } from './form-utils';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export function CustomerFormPage() {
   const { customerId } = useParams();
-  const isEdit = Boolean(customerId);
+  const isEdit = Boolean(customerId && UUID_PATTERN.test(customerId));
   const { user } = useAuth();
   const navigate = useNavigate();
   const { notify } = useToast();
@@ -37,14 +39,14 @@ export function CustomerFormPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!customerId) {
+    if (!isEdit || !customerId) {
       return;
     }
     apiGet<CustomerPayload>(`/customers/${customerId}`)
       .then((customer) => setForm(formFromCustomer(customer)))
       .catch((cause) => setError(formatApiError(cause, 'Unable to load customer')))
       .finally(() => setLoading(false));
-  }, [customerId]);
+  }, [customerId, isEdit]);
 
   function update<K extends keyof CustomerFormState>(key: K, value: CustomerFormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));

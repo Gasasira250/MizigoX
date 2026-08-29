@@ -285,6 +285,9 @@ describe('customer management', () => {
     const unauthenticated = await request(app).get('/api/v1/customers');
     expect(unauthenticated.status).toBe(401);
 
+    const invalidId = await request(app).get('/api/v1/customers/new').set(auth(admin));
+    expect(invalidId.status).toBe(422);
+
     await createOrgUser({
       email: `finance.${stamp}@example.com`,
       password,
