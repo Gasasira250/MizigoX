@@ -7,6 +7,7 @@ import { requireAnyPermission } from '../../middleware/authorize.js';
 import {
   addressInputSchema,
   contactInputSchema,
+  customerIdParamSchema,
   updateAddressSchema,
   createCustomerSchema,
   listCustomersQuerySchema,
@@ -30,6 +31,10 @@ import {
 export const customerRouter = Router();
 
 customerRouter.use(authenticate);
+
+function customerIdOf(req: { params: Record<string, string | string[] | undefined> }) {
+  return customerIdParamSchema.parse(req.params).customerId;
+}
 
 customerRouter.get(
   '/',
@@ -59,7 +64,7 @@ customerRouter.get(
   '/:customerId',
   asyncHandler(async (req, res) => {
     const auth = req.auth!;
-    const customerId = String(req.params.customerId);
+    const customerId = customerIdParamSchema.parse(req.params).customerId;
     const canRead =
       auth.permissions.includes('customers.manage') || auth.permissions.includes('customers.read');
     const isOwnOrg = auth.orgId === customerId;
@@ -84,12 +89,7 @@ customerRouter.patch(
   requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
     const body = updateCustomerSchema.parse(req.body);
-    const customer = await updateCustomer(
-      getPool(),
-      req.auth!,
-      String(req.params.customerId),
-      body,
-    );
+    const customer = await updateCustomer(getPool(), req.auth!, customerIdOf(req), body);
     sendSuccess(res, customer);
   }),
 );
@@ -98,12 +98,7 @@ customerRouter.post(
   '/:customerId/activate',
   requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
-    const customer = await setCustomerActive(
-      getPool(),
-      req.auth!,
-      String(req.params.customerId),
-      true,
-    );
+    const customer = await setCustomerActive(getPool(), req.auth!, customerIdOf(req), true);
     sendSuccess(res, customer);
   }),
 );
@@ -112,12 +107,7 @@ customerRouter.post(
   '/:customerId/deactivate',
   requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
-    const customer = await setCustomerActive(
-      getPool(),
-      req.auth!,
-      String(req.params.customerId),
-      false,
-    );
+    const customer = await setCustomerActive(getPool(), req.auth!, customerIdOf(req), false);
     sendSuccess(res, customer);
   }),
 );
@@ -126,7 +116,7 @@ customerRouter.delete(
   '/:customerId',
   requireAnyPermission('customers.manage', 'customers.delete'),
   asyncHandler(async (req, res) => {
-    const result = await archiveCustomer(getPool(), req.auth!, String(req.params.customerId));
+    const result = await archiveCustomer(getPool(), req.auth!, customerIdOf(req));
     sendSuccess(res, result);
   }),
 );
@@ -136,12 +126,7 @@ customerRouter.post(
   requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
     const body = contactInputSchema.parse(req.body);
-    const contact = await addCustomerContact(
-      getPool(),
-      req.auth!,
-      String(req.params.customerId),
-      body,
-    );
+    const contact = await addCustomerContact(getPool(), req.auth!, customerIdOf(req), body);
     sendSuccess(res, contact, 201);
   }),
 );
@@ -154,7 +139,7 @@ customerRouter.patch(
     const contact = await updateCustomerContact(
       getPool(),
       req.auth!,
-      String(req.params.customerId),
+      customerIdOf(req),
       String(req.params.contactId),
       body,
     );
@@ -169,7 +154,7 @@ customerRouter.delete(
     const result = await removeCustomerContact(
       getPool(),
       req.auth!,
-      String(req.params.customerId),
+      customerIdOf(req),
       String(req.params.contactId),
     );
     sendSuccess(res, result);
@@ -181,12 +166,7 @@ customerRouter.post(
   requireAnyPermission('customers.manage', 'customers.update'),
   asyncHandler(async (req, res) => {
     const body = addressInputSchema.parse(req.body);
-    const address = await addCustomerAddress(
-      getPool(),
-      req.auth!,
-      String(req.params.customerId),
-      body,
-    );
+    const address = await addCustomerAddress(getPool(), req.auth!, customerIdOf(req), body);
     sendSuccess(res, address, 201);
   }),
 );
@@ -199,7 +179,7 @@ customerRouter.patch(
     const address = await updateCustomerAddress(
       getPool(),
       req.auth!,
-      String(req.params.customerId),
+      customerIdOf(req),
       String(req.params.addressId),
       body,
     );
@@ -214,7 +194,7 @@ customerRouter.delete(
     const result = await removeCustomerAddress(
       getPool(),
       req.auth!,
-      String(req.params.customerId),
+      customerIdOf(req),
       String(req.params.addressId),
     );
     sendSuccess(res, result);

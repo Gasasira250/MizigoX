@@ -38,7 +38,9 @@ export function CustomerDetailPage() {
   const [confirm, setConfirm] = useState<ConfirmState>(null);
 
   async function load() {
-    if (!customerId) {
+    if (!customerId || !/^[0-9a-f-]{36}$/i.test(customerId)) {
+      setError('Customer not found');
+      setLoading(false);
       return;
     }
     setLoading(true);
