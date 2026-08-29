@@ -260,7 +260,7 @@ describe('customer management', () => {
     expect(page.body.meta.pageSize).toBe(1);
 
     const filtered = await request(app)
-      .get(`/api/v1/customers?q=Filter%20Co%20${stamp}&customerType=NGO`)
+      .get(`/api/v1/customers?q=Filter%20Co%20Huye%20${stamp}&customerType=NGO`)
       .set(auth(admin));
     expect(filtered.status).toBe(200);
     expect(
@@ -405,7 +405,9 @@ describe('customer management', () => {
     expect(portalOwn.status).toBe(200);
     expect(portalOwn.body.data.id).toBe(portal.organizationId);
 
-    const listedByAdmin = await request(app).get('/api/v1/customers').set(auth(admin));
+    const listedByAdmin = await request(app)
+      .get(`/api/v1/customers?q=Western%20Shipper%20${stamp}`)
+      .set(auth(admin));
     expect(
       listedByAdmin.body.data.some((row: { id: string }) => row.id === foreign.body.data.id),
     ).toBe(true);
@@ -458,7 +460,7 @@ describe('customer management', () => {
     const actions = await getPool().query<{ action: string }>(
       `
         SELECT action FROM audit_logs
-        WHERE entity_id = $1 OR organization_id = $1
+        WHERE organization_id = $1::uuid OR entity_id = $1::text
         ORDER BY created_at
       `,
       [customerId],

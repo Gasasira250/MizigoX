@@ -169,7 +169,7 @@ export async function listCustomers(pool: Pool, actor: AuthContext, query: ListC
 
   if (query.customerType) {
     params.push(query.customerType);
-    where.push(`p.customer_type = $${params.length}`);
+    where.push(`p.customer_type::text = $${params.length}`);
   }
 
   const count = await pool.query<{ total: string }>(
