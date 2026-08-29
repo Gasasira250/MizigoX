@@ -1,4 +1,4 @@
-import { canReadCustomers } from '@mizigox/shared';
+import { canReadCustomers, canReadShipments } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
@@ -7,7 +7,7 @@ const later = ['Vehicles', 'Drivers', 'Routes', 'Tracking', 'Invoices'];
 export function AdminShell() {
   const { user, logout } = useAuth();
   const canCustomers = canReadCustomers(user?.permissions);
-  const canShipments = user?.permissions.includes('shipments.read');
+  const canShipments = canReadShipments(user?.permissions);
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
