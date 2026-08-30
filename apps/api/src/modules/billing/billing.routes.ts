@@ -286,7 +286,10 @@ invoiceRouter.patch(
   asyncHandler(async (req, res) => {
     const ids = itemIdsOf(req);
     const body = invoiceItemInputSchema.parse(req.body);
-    sendSuccess(res, await updateInvoiceItem(getPool(), req.auth!, ids.invoiceId, ids.itemId, body));
+    sendSuccess(
+      res,
+      await updateInvoiceItem(getPool(), req.auth!, ids.invoiceId, ids.itemId, body),
+    );
   }),
 );
 

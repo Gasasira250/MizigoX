@@ -173,7 +173,10 @@ export function CustomerDetailPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-[#12355b]">Financial summary</h2>
-            <Link className="text-sm text-teal-800 hover:underline" to={`/admin/invoices?customerId=${customer.id}`}>
+            <Link
+              className="text-sm text-teal-800 hover:underline"
+              to={`/admin/invoices?customerId=${customer.id}`}
+            >
               View invoices
             </Link>
           </div>
@@ -199,7 +202,10 @@ export function CustomerDetailPage() {
             <ul className="mt-4 space-y-1 text-sm">
               {outstanding.slice(0, 5).map((invoice) => (
                 <li key={invoice.id}>
-                  <Link className="text-teal-800 hover:underline" to={`/admin/invoices/${invoice.id}`}>
+                  <Link
+                    className="text-teal-800 hover:underline"
+                    to={`/admin/invoices/${invoice.id}`}
+                  >
                     {invoice.number}
                   </Link>{' '}
                   · {formatMoney(invoice.amountDue, invoice.currencyCode)} due

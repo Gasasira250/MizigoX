@@ -221,7 +221,9 @@ export function InvoiceFormPage({ basePath }: { basePath: '/admin' }) {
         </p>
       </div>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-2">
         <label className="text-sm">
@@ -338,7 +340,10 @@ export function InvoiceFormPage({ basePath }: { basePath: '/admin' }) {
           </button>
         </div>
         {lines.map((line) => (
-          <div key={line.key} className="grid gap-2 rounded-lg border border-slate-100 p-3 md:grid-cols-6">
+          <div
+            key={line.key}
+            className="grid gap-2 rounded-lg border border-slate-100 p-3 md:grid-cols-6"
+          >
             <select
               className="rounded-md border border-slate-300 px-2 py-2 text-sm md:col-span-2"
               value={line.serviceId}

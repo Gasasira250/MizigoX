@@ -8,13 +8,13 @@ export function normalizeMoney(value: string, label = 'Amount') {
   if (!MONEY_PATTERN.test(trimmed)) {
     throw unprocessable(`${label} must be a non-negative decimal with up to 2 places`);
   }
-  const [whole, fraction = ''] = trimmed.split('.');
+  const [whole = '0', fraction = ''] = trimmed.split('.');
   return `${Number(whole)}.${fraction.padEnd(2, '0')}`;
 }
 
 export function moneyToMinor(value: string, label = 'Amount') {
   const normalized = normalizeMoney(value, label);
-  const [whole, fraction] = normalized.split('.');
+  const [whole = '0', fraction = '00'] = normalized.split('.');
   return BigInt(whole) * 100n + BigInt(fraction);
 }
 
@@ -82,7 +82,7 @@ export function lineAmounts(input: {
 }
 
 function quantityToMilli(value: string) {
-  const [whole, fraction = ''] = value.split('.');
+  const [whole = '0', fraction = ''] = value.split('.');
   return BigInt(whole) * 1000n + BigInt(fraction.padEnd(3, '0'));
 }
 
@@ -91,7 +91,7 @@ function parseTaxRate(value: string) {
   if (!/^\d+(\.\d{1,2})?$/.test(trimmed)) {
     throw unprocessable('Tax rate must be a non-negative percent with up to 2 places');
   }
-  const [whole, fraction = ''] = trimmed.split('.');
+  const [whole = '0', fraction = ''] = trimmed.split('.');
   const rate = BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0'));
   if (rate > 10000n) {
     throw unprocessable('Tax rate cannot exceed 100%');

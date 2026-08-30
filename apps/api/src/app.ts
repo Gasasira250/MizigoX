@@ -19,11 +19,7 @@ import { routeRouter } from './modules/routes/route.routes.js';
 import { dispatchRouter } from './modules/dispatch/dispatch.routes.js';
 import { trackingRouter } from './modules/tracking/tracking.routes.js';
 import { publicTrackingRouter } from './modules/tracking/public-tracking.routes.js';
-import {
-  billingRouter,
-  invoiceRouter,
-  paymentRouter,
-} from './modules/billing/billing.routes.js';
+import { billingRouter, invoiceRouter, paymentRouter } from './modules/billing/billing.routes.js';
 import { billingWebhookRouter } from './modules/billing/billing.webhook.js';
 
 export function createApp() {

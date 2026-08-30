@@ -15,7 +15,13 @@ import { useAuth } from '../../shared/auth/AuthProvider';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { useToast } from '../../shared/ui/ToastProvider';
-import { formatApiError, formatDateOnly, formatDateTime, formatMoney, paymentTermsLabel } from './format';
+import {
+  formatApiError,
+  formatDateOnly,
+  formatDateTime,
+  formatMoney,
+  paymentTermsLabel,
+} from './format';
 
 interface ActivityRow {
   action: string;
@@ -228,7 +234,11 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
         <Row label="Tax" value={formatMoney(invoice.taxAmount, invoice.currencyCode)} />
         <Row label="Total" value={formatMoney(invoice.totalAmount, invoice.currencyCode)} strong />
         <Row label="Paid" value={formatMoney(invoice.amountPaid, invoice.currencyCode)} />
-        <Row label="Balance due" value={formatMoney(invoice.amountDue, invoice.currencyCode)} strong />
+        <Row
+          label="Balance due"
+          value={formatMoney(invoice.amountDue, invoice.currencyCode)}
+          strong
+        />
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-4">
@@ -239,7 +249,10 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
           <ul className="mt-2 space-y-1 text-sm">
             {invoice.shipments.map((shipment) => (
               <li key={shipment.shipmentId}>
-                <Link className="text-teal-800 hover:underline" to={`${basePath}/shipments/${shipment.shipmentId}`}>
+                <Link
+                  className="text-teal-800 hover:underline"
+                  to={`${basePath}/shipments/${shipment.shipmentId}`}
+                >
                   {shipment.reference}
                 </Link>{' '}
                 · {invoiceStatusLabel(shipment.status)}
@@ -259,13 +272,17 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
               <li key={payment.id} className="flex flex-wrap items-center justify-between gap-2">
                 <span>
                   {isAdmin ? (
-                    <Link className="text-teal-800 hover:underline" to={`/admin/payments/${payment.id}`}>
+                    <Link
+                      className="text-teal-800 hover:underline"
+                      to={`/admin/payments/${payment.id}`}
+                    >
                       {payment.reference}
                     </Link>
                   ) : (
                     payment.reference
                   )}{' '}
-                  · {paymentMethodLabel(payment.method)} · {formatMoney(payment.amount, payment.currencyCode)}
+                  · {paymentMethodLabel(payment.method)} ·{' '}
+                  {formatMoney(payment.amount, payment.currencyCode)}
                 </span>
                 <StatusBadge status={payment.status} />
                 <span className="sr-only">{paymentStatusLabel(payment.status)}</span>
@@ -305,7 +322,9 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
               ? 'Issuing makes this invoice an outstanding receivable. Totals cannot be edited afterwards.'
               : 'Cancelled and void invoices are not treated as outstanding receivables.'
           }
-          confirmLabel={confirm === 'issue' ? 'Issue' : confirm === 'void' ? 'Void' : 'Cancel invoice'}
+          confirmLabel={
+            confirm === 'issue' ? 'Issue' : confirm === 'void' ? 'Void' : 'Cancel invoice'
+          }
           danger={confirm !== 'issue'}
           onCancel={() => setConfirm(null)}
           onConfirm={() => void runAction()}
@@ -315,15 +334,7 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
   );
 }
 
-function Row({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-slate-500">{label}</span>

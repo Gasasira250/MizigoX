@@ -45,7 +45,9 @@ export function PaymentFormPage() {
         notes: notes || undefined,
         idempotencyKey: `ui-${invoiceId}-${amount}-${Date.now()}`,
       });
-      notify(`${created.reference} recorded as ${created.status.toLowerCase()}. Confirm it to apply the balance.`);
+      notify(
+        `${created.reference} recorded as ${created.status.toLowerCase()}. Confirm it to apply the balance.`,
+      );
       navigate(`/admin/payments/${created.id}`);
     } catch (cause) {
       setError(formatApiError(cause, 'Unable to record payment'));
@@ -67,7 +69,9 @@ export function PaymentFormPage() {
         </p>
       </div>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-2">
         <label className="text-sm md:col-span-2">

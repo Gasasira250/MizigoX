@@ -32,7 +32,12 @@ async function createCustomer(token: string, name: string, operatorOrganizationI
 async function createIssuedInvoice(
   token: string,
   customerId: string,
-  extras?: { unitPrice?: string; taxRatePercent?: string; discountAmount?: string; quantity?: string },
+  extras?: {
+    unitPrice?: string;
+    taxRatePercent?: string;
+    discountAmount?: string;
+    quantity?: string;
+  },
 ) {
   const response = await request(app)
     .post('/api/v1/invoices')
@@ -192,9 +197,7 @@ describe('billing invoices and payments', () => {
     expect(pending.body.data.reference).toMatch(/^MX-PAY-\d{6}$/);
     expect(pending.body.data.status).toBe('PENDING');
 
-    const stillOpen = await request(app)
-      .get(`/api/v1/invoices/${invoice.id}`)
-      .set(auth(admin));
+    const stillOpen = await request(app).get(`/api/v1/invoices/${invoice.id}`).set(auth(admin));
     expect(stillOpen.body.data.amountPaid).toBe('0.00');
     expect(stillOpen.body.data.status).toBe('ISSUED');
 
@@ -256,13 +259,20 @@ describe('billing invoices and payments', () => {
     const failed = await request(app)
       .post('/api/v1/payments')
       .set(auth(admin))
-      .send({ invoiceId: invoice.id, amount: '10000.00', method: 'MOBILE_MONEY', providerReference: 'MOMO-FAIL' });
+      .send({
+        invoiceId: invoice.id,
+        amount: '10000.00',
+        method: 'MOBILE_MONEY',
+        providerReference: 'MOMO-FAIL',
+      });
     expect(failed.status).toBe(201);
     const marked = await request(app)
       .post(`/api/v1/payments/${failed.body.data.id}/fail`)
       .set(auth(admin));
     expect(marked.body.data.status).toBe('FAILED');
-    const invoiceAfterFail = await request(app).get(`/api/v1/invoices/${invoice.id}`).set(auth(admin));
+    const invoiceAfterFail = await request(app)
+      .get(`/api/v1/invoices/${invoice.id}`)
+      .set(auth(admin));
     expect(invoiceAfterFail.body.data.amountPaid).toBe('0.00');
     expect(invoiceAfterFail.body.data.status).toBe('ISSUED');
   });
@@ -336,9 +346,9 @@ describe('billing invoices and payments', () => {
       .get(`/api/v1/invoices/${listed.body.data[0].id}/activity`)
       .set(auth(admin));
     expect(activity.status).toBe(200);
-    expect(activity.body.data.some((row: { action: string }) => row.action === 'INVOICE_ISSUED')).toBe(
-      true,
-    );
+    expect(
+      activity.body.data.some((row: { action: string }) => row.action === 'INVOICE_ISSUED'),
+    ).toBe(true);
 
     const balance = await request(app)
       .get(`/api/v1/customers/${customer.id}/balance`)
@@ -404,13 +414,11 @@ describe('billing invoices and payments', () => {
       .set(auth(portalToken));
     expect([403, 404]).toContain(otherInvoice.status);
 
-    const webhook = await request(app)
-      .post('/api/v1/webhooks/payments/MANUAL')
-      .send({
-        eventId: 'evt-not-signed-123',
-        paymentReference: 'MX-PAY-000001',
-        status: 'SUCCESSFUL',
-      });
+    const webhook = await request(app).post('/api/v1/webhooks/payments/MANUAL').send({
+      eventId: 'evt-not-signed-123',
+      paymentReference: 'MX-PAY-000001',
+      status: 'SUCCESSFUL',
+    });
     expect(webhook.status).toBe(422);
   });
 });
