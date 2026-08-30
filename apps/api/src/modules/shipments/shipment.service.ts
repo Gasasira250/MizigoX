@@ -10,6 +10,7 @@ import type { Pool, PoolClient } from 'pg';
 import { insertAddress, mapAddress, toNumber, type AddressInput } from '../../lib/addresses.js';
 import { writeAudit } from '../../lib/audit.js';
 import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.js';
+import { getLinkedDriver } from '../../lib/linked-driver.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import {
   insertTrackingEvent,
@@ -161,6 +162,7 @@ export async function listShipments(pool: Pool, actor: AuthContext, query: ListS
   const params: unknown[] = [];
   const where = ['s.deleted_at IS NULL'];
   applyTenantFilter(actor, where, params, 's');
+  await applyDriverShipmentFilter(pool, actor, where, params, 's.id');
 
   if (query.status) {
     params.push(query.status);
@@ -262,6 +264,7 @@ export async function loadShipment(
     String(row.customer_organization_id),
     String(row.operator_organization_id),
   );
+  await assertDriverShipmentAccess(pool, actor, shipmentId);
 
   const [origin, destination, items, events, currentRoute] = await Promise.all([
     loadAddress(pool, (row.origin_address_id as string | null) ?? null),
@@ -557,14 +560,35 @@ export async function updateShipmentStatus(
   actor: AuthContext,
   shipmentId: string,
   input: StatusInput,
+  options: { viaPod?: boolean } = {},
 ) {
   const current = await loadShipment(pool, actor, shipmentId);
+  if (actor.role === 'DRIVER' && !options.viaPod) {
+    throw forbidden('Drivers must use the assigned trip workflow and proof of delivery');
+  }
   if (!canTransitionShipment(current.status, input.status)) {
     throw new AppError(
       422,
       'SHIPMENT_INVALID_TRANSITION',
       `Cannot move a ${current.status} shipment to ${input.status}.`,
     );
+  }
+  if (input.status === 'DELIVERED' && !options.viaPod) {
+    const pod = await pool.query<{ id: string }>(
+      `
+        SELECT id FROM proofs_of_delivery
+        WHERE shipment_id = $1 AND deleted_at IS NULL AND status IN ('SUBMITTED', 'VERIFIED')
+        LIMIT 1
+      `,
+      [shipmentId],
+    );
+    if (!pod.rows[0]) {
+      throw new AppError(
+        422,
+        'POD_REQUIRED',
+        'A validated proof of delivery is required before marking a shipment delivered.',
+      );
+    }
   }
 
   const client = await pool.connect();
@@ -1091,6 +1115,47 @@ function applyTenantFilter(actor: AuthContext, where: string[], params: unknown[
   }
   params.push(actor.orgId);
   where.push(`${alias}.customer_organization_id = $${params.length}`);
+}
+
+async function applyDriverShipmentFilter(
+  pool: Pool,
+  actor: AuthContext,
+  where: string[],
+  params: unknown[],
+  shipmentIdColumn: string,
+) {
+  if (actor.role !== 'DRIVER') {
+    return;
+  }
+  const driver = await getLinkedDriver(pool, actor, { required: true });
+  params.push(driver!.id);
+  where.push(`EXISTS (
+    SELECT 1 FROM route_shipments rs
+    JOIN routes r ON r.id = rs.route_id
+    WHERE rs.shipment_id = ${shipmentIdColumn}
+      AND r.driver_id = $${params.length}
+      AND r.deleted_at IS NULL
+  )`);
+}
+
+async function assertDriverShipmentAccess(pool: Pool, actor: AuthContext, shipmentId: string) {
+  if (actor.role !== 'DRIVER') {
+    return;
+  }
+  const driver = await getLinkedDriver(pool, actor, { required: true });
+  const assigned = await pool.query(
+    `
+      SELECT r.id
+      FROM route_shipments rs
+      JOIN routes r ON r.id = rs.route_id
+      WHERE rs.shipment_id = $1 AND r.driver_id = $2 AND r.deleted_at IS NULL
+      LIMIT 1
+    `,
+    [shipmentId, driver!.id],
+  );
+  if (!assigned.rows[0]) {
+    throw forbidden('You do not have access to this shipment');
+  }
 }
 
 function assertShipmentAccess(actor: AuthContext, customerId: string, operatorId: string) {

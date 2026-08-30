@@ -1,6 +1,6 @@
 import type { LoginResponse, SessionUser } from '@mizigox/shared';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { apiGet, apiPost, refreshAccessToken, setAccessToken } from '../api/client';
+import { apiGet, apiPost, refreshAccessToken, setAccessToken, setUnauthorizedHandler } from '../api/client';
 
 interface AuthContextValue {
   user: SessionUser | null;
@@ -20,6 +20,14 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setAccessToken(null);
+      setUser(null);
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

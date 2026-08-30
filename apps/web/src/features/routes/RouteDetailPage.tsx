@@ -362,7 +362,11 @@ export function RouteDetailPage() {
           <h2 className="text-sm font-semibold text-[#12355b]">Vehicle</h2>
           {route.vehicleId ? (
             <div className="mt-3 space-y-1 text-sm">
-              <p className="font-medium">{route.vehicleRegistration}</p>
+              <p className="font-medium">
+                <Link className="text-[#12355b] hover:underline" to={`/admin/vehicles/${route.vehicleId}`}>
+                  {route.vehicleRegistration}
+                </Link>
+              </p>
               <p className="text-slate-500">{route.vehicleReference}</p>
               <p>Capacity {formatKg(route.vehicleCapacityKg)}</p>
               {route.vehicleStatus ? <StatusBadge status={route.vehicleStatus} /> : null}
@@ -373,7 +377,11 @@ export function RouteDetailPage() {
           <h2 className="mt-6 text-sm font-semibold text-[#12355b]">Driver</h2>
           {route.driverId ? (
             <div className="mt-3 space-y-1 text-sm">
-              <p className="font-medium">{route.driverName}</p>
+              <p className="font-medium">
+                <Link className="text-[#12355b] hover:underline" to={`/admin/drivers/${route.driverId}`}>
+                  {route.driverName}
+                </Link>
+              </p>
               <p className="text-slate-500">{route.driverPhone}</p>
               {route.driverStatus ? <StatusBadge status={route.driverStatus} /> : null}
             </div>

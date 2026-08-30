@@ -17,9 +17,25 @@ body,
   min-height: 100%;
 }
 
+:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-ink);
   background: var(--color-paper);
+}
+
+button,
+[type='submit'],
+[type='button'] {
+  min-height: 2.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
