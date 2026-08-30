@@ -1,3 +1,4 @@
+import { canReadInvoices } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
@@ -13,9 +14,16 @@ export function PortalShell({ title }: { title: string }) {
         </div>
         <div className="flex items-center gap-4 text-sm">
           {title === 'Customer portal' ? (
-            <NavLink className="text-slate-700 hover:underline" to="/portal/shipments">
-              Shipments
-            </NavLink>
+            <>
+              <NavLink className="text-slate-700 hover:underline" to="/portal/shipments">
+                Shipments
+              </NavLink>
+              {canReadInvoices(user?.permissions) ? (
+                <NavLink className="text-slate-700 hover:underline" to="/portal/invoices">
+                  Invoices
+                </NavLink>
+              ) : null}
+            </>
           ) : null}
           {title === 'Driver portal' ? (
             <NavLink className="text-slate-700 hover:underline" to="/driver">

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { HealthPayload, ReadinessPayload } from '@mizigox/shared';
+import type { FinanceSummaryPayload, HealthPayload, ReadinessPayload } from '@mizigox/shared';
+import { canReadFinance } from '@mizigox/shared';
 import { ChangePasswordPanel } from '../auth/ChangePasswordPanel';
 import { InviteUserPanel } from '../auth/InviteUserPanel';
 import { apiGet } from '../../shared/api/client';
 import { useAuth } from '../../shared/auth/AuthProvider';
+import { FinanceSummaryCards } from '../billing/FinanceSummaryCards';
 
 interface StatusCard {
   label: string;
@@ -15,7 +17,9 @@ export function FoundationPage() {
   const { user } = useAuth();
   const [health, setHealth] = useState<HealthPayload | null>(null);
   const [ready, setReady] = useState<ReadinessPayload | null>(null);
+  const [finance, setFinance] = useState<FinanceSummaryPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const showFinance = canReadFinance(user?.permissions);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,6 +34,12 @@ export function FoundationPage() {
           setHealth(healthResult);
           setReady(readyResult);
         }
+        if (showFinance) {
+          const summary = await apiGet<FinanceSummaryPayload>('/billing/finance/summary');
+          if (!cancelled) {
+            setFinance(summary);
+          }
+        }
       } catch (cause) {
         if (!cancelled) {
           setError(cause instanceof Error ? cause.message : 'Unable to load system status');
@@ -41,7 +51,7 @@ export function FoundationPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showFinance]);
 
   const cards: StatusCard[] = [
     {
@@ -93,6 +103,13 @@ export function FoundationPage() {
           </article>
         ))}
       </section>
+
+      {finance ? (
+        <section>
+          <h2 className="mb-3 text-sm font-semibold text-slate-800">Financial summary</h2>
+          <FinanceSummaryCards summary={finance} />
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-slate-800">Granted permissions</h2>

@@ -69,6 +69,10 @@ const envSchema = z.object({
   MAP_PROVIDER: z.enum(['none', 'osm', 'mapbox', 'google']).default('osm'),
   MAPBOX_ACCESS_TOKEN: z.string().optional(),
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  PAYMENT_DEFAULT_PROVIDER: z.enum(['MANUAL', 'MOBILE_MONEY', 'BANK', 'CARD_GATEWAY', 'OTHER']).default('MANUAL'),
+  PAYMENT_GATEWAY_BASE_URL: z.string().url().optional(),
+  PAYMENT_GATEWAY_API_KEY: z.string().optional(),
+  PAYMENT_WEBHOOK_SECRET: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

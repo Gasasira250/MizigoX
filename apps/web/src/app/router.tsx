@@ -24,6 +24,13 @@ import { PublicTrackPage } from '../features/tracking/PublicTrackPage';
 import { RouteTrackingPage } from '../features/tracking/RouteTrackingPage';
 import { ShipmentTrackingPage } from '../features/tracking/ShipmentTrackingPage';
 import { VehicleTrackingPage } from '../features/tracking/VehicleTrackingPage';
+import { InvoiceDetailPage } from '../features/billing/InvoiceDetailPage';
+import { InvoiceFormPage } from '../features/billing/InvoiceFormPage';
+import { InvoicePrintPage } from '../features/billing/InvoicePrintPage';
+import { InvoicesPage } from '../features/billing/InvoicesPage';
+import { PaymentDetailPage } from '../features/billing/PaymentDetailPage';
+import { PaymentFormPage } from '../features/billing/PaymentFormPage';
+import { PaymentsPage } from '../features/billing/PaymentsPage';
 import { FoundationPage } from '../features/system/FoundationPage';
 import { useAuth } from '../shared/auth/AuthProvider';
 import { homePathFor } from '../shared/auth/home-path';
@@ -120,6 +127,18 @@ export function AppRouter() {
             <Route path="routes/:routeId" element={<RouteTrackingPage />} />
             <Route path="shipments/:shipmentId" element={<ShipmentTrackingPage />} />
           </Route>
+          <Route path="/admin/invoices">
+            <Route index element={<InvoicesPage basePath="/admin" />} />
+            <Route path="new" element={<InvoiceFormPage basePath="/admin" />} />
+            <Route path=":invoiceId/edit" element={<InvoiceFormPage basePath="/admin" />} />
+            <Route path=":invoiceId/print" element={<InvoicePrintPage basePath="/admin" />} />
+            <Route path=":invoiceId" element={<InvoiceDetailPage basePath="/admin" />} />
+          </Route>
+          <Route path="/admin/payments">
+            <Route index element={<PaymentsPage />} />
+            <Route path="new" element={<PaymentFormPage />} />
+            <Route path=":paymentId" element={<PaymentDetailPage />} />
+          </Route>
         </Route>
       </Route>
 
@@ -131,6 +150,11 @@ export function AppRouter() {
             <Route path="new" element={<ShipmentFormPage basePath="/portal" />} />
             <Route path=":shipmentId/edit" element={<ShipmentFormPage basePath="/portal" />} />
             <Route path=":shipmentId" element={<ShipmentDetailPage basePath="/portal" />} />
+          </Route>
+          <Route path="/portal/invoices">
+            <Route index element={<InvoicesPage basePath="/portal" />} />
+            <Route path=":invoiceId/print" element={<InvoicePrintPage basePath="/portal" />} />
+            <Route path=":invoiceId" element={<InvoiceDetailPage basePath="/portal" />} />
           </Route>
         </Route>
       </Route>

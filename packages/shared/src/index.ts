@@ -1,3 +1,4 @@
+export * from './billing.js';
 export * from './customers.js';
 export * from './enums.js';
 export * from './fleet.js';

@@ -7,11 +7,11 @@ import {
   canReadVehicles,
   canReadTracking,
   canViewLiveTracking,
+  canReadInvoices,
+  canReadPayments,
 } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
-
-const later = ['Invoices'];
 
 export function AdminShell() {
   const { user, logout } = useAuth();
@@ -23,6 +23,8 @@ export function AdminShell() {
   const canDispatch = canReadDispatch(user?.permissions);
   const canTracking = canReadTracking(user?.permissions);
   const canLive = canViewLiveTracking(user?.permissions);
+  const canInvoices = canReadInvoices(user?.permissions);
+  const canPayments = canReadPayments(user?.permissions);
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -142,15 +144,26 @@ export function AdminShell() {
                 Live Tracking
               </NavLink>
             ) : null}
-            {later.map((item) => (
-              <div
-                key={item}
-                className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-slate-400"
+            {canInvoices ? (
+              <NavLink
+                to="/admin/invoices"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
               >
-                <span>{item}</span>
-                <span className="text-[10px] uppercase tracking-wide">Later</span>
-              </div>
-            ))}
+                Invoices
+              </NavLink>
+            ) : null}
+            {canPayments ? (
+              <NavLink
+                to="/admin/payments"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Payments
+              </NavLink>
+            ) : null}
           </nav>
         </aside>
         <main className="p-6">
