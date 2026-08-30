@@ -1,23 +1,39 @@
 {
   "name": "mizigox",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.1.0",
+  "description": "MizigoX freight and logistics platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "dev": "npm run build -w @mizigox/shared && concurrently -n api,web -c blue,green \"npm run dev -w @mizigox/api\" \"npm run dev -w @mizigox/web\"",
+    "dev:api": "npm run dev -w @mizigox/api",
+    "dev:web": "npm run dev -w @mizigox/web",
+    "build": "npm run build -w @mizigox/shared && npm run build -w @mizigox/api && npm run build -w @mizigox/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run build -w @mizigox/shared && npm run typecheck --workspaces --if-present",
+    "db:migrate": "npm run db:migrate -w @mizigox/api",
+    "db:seed": "npm run db:seed -w @mizigox/api",
+    "start": "npm run start -w @mizigox/api"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.0",
-    "oxlint": "^1.79.0",
-    "vite": "^8.2.2"
+    "@eslint/js": "^9.34.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

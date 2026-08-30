@@ -1,3 +1,17 @@
+# Dependencies and builds
+node_modules
+dist
+dist-ssr
+coverage
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+*.pem
+
 # Logs
 logs
 *.log
@@ -5,14 +19,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,3 +30,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test artifacts
+playwright-report
+test-results
+
+# Local proof-of-delivery / document storage
+var/storage
