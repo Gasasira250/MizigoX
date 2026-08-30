@@ -6,7 +6,13 @@ import { InviteUserPanel } from '../auth/InviteUserPanel';
 import { apiGetWithMeta } from '../../shared/api/client';
 import { formatAppError } from '../../shared/api/errors';
 import { useAuth } from '../../shared/auth/AuthProvider';
-import { EmptyState, ErrorState, LoadingState, PageHeader, ResponsiveTable } from '../../shared/ui/Dashboard';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  ResponsiveTable,
+} from '../../shared/ui/Dashboard';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 
 export function AdminUsersPage() {
@@ -37,11 +43,15 @@ export function AdminUsersPage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Users" description="Organization members. Role changes cannot be used to elevate your own account." />
+      <PageHeader
+        title="Users"
+        description="Organization members. Role changes cannot be used to elevate your own account."
+      />
       <form
         className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(event) => {
@@ -95,7 +105,10 @@ export function AdminUsersPage() {
               {users.map((item) => (
                 <tr key={item.id} className="border-t border-slate-100">
                   <td className="px-3 py-2">
-                    <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/users/${item.id}`}>
+                    <Link
+                      className="font-medium text-[#12355b] hover:underline"
+                      to={`/admin/users/${item.id}`}
+                    >
                       {item.firstName} {item.lastName}
                     </Link>
                   </td>

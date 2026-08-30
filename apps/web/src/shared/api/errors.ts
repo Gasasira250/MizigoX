@@ -11,7 +11,7 @@ const STATUS_MESSAGES: Record<number, string> = {
   500: 'Something went wrong. Please try again.',
 };
 
-export function formatAppError(error: unknown, fallback: string) {
+export function formatAppError(error: unknown, fallback: string): string {
   if (error instanceof TypeError && error.message.toLowerCase().includes('fetch')) {
     return 'Network error. Check your connection and retry.';
   }
@@ -19,7 +19,7 @@ export function formatAppError(error: unknown, fallback: string) {
     return error instanceof Error ? error.message : fallback;
   }
   if (error.status === 401) {
-    return STATUS_MESSAGES[401];
+    return STATUS_MESSAGES[401] ?? 'Your session has expired. Please sign in again.';
   }
   const issues = error.details
     .map((detail) => {

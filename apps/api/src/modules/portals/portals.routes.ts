@@ -108,7 +108,10 @@ portalRouter.get(
 portalRouter.patch(
   '/me/profile',
   asyncHandler(async (req, res) => {
-    sendSuccess(res, await updateProfile(getPool(), req.auth!, updateProfileSchema.parse(req.body)));
+    sendSuccess(
+      res,
+      await updateProfile(getPool(), req.auth!, updateProfileSchema.parse(req.body)),
+    );
   }),
 );
 
@@ -279,7 +282,11 @@ portalRouter.post(
   '/pod',
   requireAnyPermission('pod.create', 'pod.manage', 'shipments.upload_pod'),
   asyncHandler(async (req, res) => {
-    sendSuccess(res, await submitProofOfDelivery(getPool(), req.auth!, submitPodSchema.parse(req.body)), 201);
+    sendSuccess(
+      res,
+      await submitProofOfDelivery(getPool(), req.auth!, submitPodSchema.parse(req.body)),
+      201,
+    );
   }),
 );
 

@@ -2,7 +2,13 @@ import type { AuditLogPayload } from '@mizigox/shared';
 import { useEffect, useState } from 'react';
 import { apiGetWithMeta } from '../../shared/api/client';
 import { formatAppError } from '../../shared/api/errors';
-import { EmptyState, ErrorState, LoadingState, PageHeader, ResponsiveTable } from '../../shared/ui/Dashboard';
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  ResponsiveTable,
+} from '../../shared/ui/Dashboard';
 
 export function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLogPayload[]>([]);
@@ -29,11 +35,15 @@ export function AuditLogsPage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Audit logs" description="Important account and operational activity for your organization." />
+      <PageHeader
+        title="Audit logs"
+        description="Important account and operational activity for your organization."
+      />
       <form
         className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(event) => {
@@ -79,7 +89,9 @@ export function AuditLogsPage() {
             <tbody>
               {logs.map((log) => (
                 <tr key={log.id} className="border-t border-slate-100">
-                  <td className="px-3 py-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
                   <td className="px-3 py-2">{log.actorName ?? log.actorEmail ?? 'System'}</td>
                   <td className="px-3 py-2">{log.action}</td>
                   <td className="px-3 py-2">

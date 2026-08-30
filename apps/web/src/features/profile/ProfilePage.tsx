@@ -55,7 +55,10 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Profile" description="You can update personal details. Role and organization cannot be changed here." />
+      <PageHeader
+        title="Profile"
+        description="You can update personal details. Role and organization cannot be changed here."
+      />
       <section className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
         <p>
           {profile.role.replaceAll('_', ' ')} · {profile.organization.name}
@@ -64,34 +67,67 @@ export function ProfilePage() {
           <StatusBadge status={profile.status} />
         </div>
       </section>
-      <form className="space-y-3 rounded-xl border border-slate-200 bg-white p-4" onSubmit={(event) => void onSubmit(event)}>
+      <form
+        className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+        onSubmit={(event) => void onSubmit(event)}
+      >
         <label className="block text-sm font-medium">
           First name
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
         </label>
         <label className="block text-sm font-medium">
           Last name
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
         </label>
         <label className="block text-sm font-medium">
           Email
-          <input className="mt-1 w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2" value={profile.email} disabled />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2"
+            value={profile.email}
+            disabled
+          />
         </label>
         <label className="block text-sm font-medium">
           Phone
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
         </label>
         <label className="block text-sm font-medium">
           Language
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={language} onChange={(e) => setLanguage(e.target.value)} />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          />
         </label>
         <label className="block text-sm font-medium">
           Time zone
-          <input className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+          />
         </label>
         <label className="block text-sm font-medium">
           Display density
-          <select className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={density} onChange={(e) => setDensity(e.target.value as 'comfortable' | 'compact')}>
+          <select
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            value={density}
+            onChange={(e) => setDensity(e.target.value as 'comfortable' | 'compact')}
+          >
             <option value="comfortable">Comfortable</option>
             <option value="compact">Compact</option>
           </select>

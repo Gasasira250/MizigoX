@@ -108,7 +108,10 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
           </div>
           <p className="mt-1 text-sm text-slate-600">
             {isAdmin ? (
-              <Link className="hover:underline" to={`/admin/customers/${invoice.customerOrganizationId}`}>
+              <Link
+                className="hover:underline"
+                to={`/admin/customers/${invoice.customerOrganizationId}`}
+              >
                 {invoice.customerName}
               </Link>
             ) : (

@@ -126,7 +126,10 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
           </div>
           <p className="mt-1 text-sm text-slate-600">
             {basePath === '/admin' ? (
-              <Link className="hover:underline" to={`/admin/customers/${shipment.customerOrganizationId}`}>
+              <Link
+                className="hover:underline"
+                to={`/admin/customers/${shipment.customerOrganizationId}`}
+              >
                 {shipment.customerName}
               </Link>
             ) : (
@@ -167,29 +170,45 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
 
       <section className="flex flex-wrap gap-3 text-sm">
         {basePath === '/admin' ? (
-          <Link className="text-teal-800 hover:underline" to={`/admin/customers/${shipment.customerOrganizationId}`}>
+          <Link
+            className="text-teal-800 hover:underline"
+            to={`/admin/customers/${shipment.customerOrganizationId}`}
+          >
             Customer record
           </Link>
         ) : null}
         {shipment.currentRoute ? (
           <Link
             className="text-teal-800 hover:underline"
-            to={basePath === '/admin' ? `/admin/routes/${shipment.currentRoute.id}` : `${basePath}/shipments/${shipment.id}`}
+            to={
+              basePath === '/admin'
+                ? `/admin/routes/${shipment.currentRoute.id}`
+                : `${basePath}/shipments/${shipment.id}`
+            }
           >
             Route {shipment.currentRoute.reference}
           </Link>
         ) : null}
         {basePath === '/admin' ? (
-          <Link className="text-teal-800 hover:underline" to={`/admin/tracking/shipments/${shipment.id}`}>
+          <Link
+            className="text-teal-800 hover:underline"
+            to={`/admin/tracking/shipments/${shipment.id}`}
+          >
             Live tracking
           </Link>
         ) : (
-          <Link className="text-teal-800 hover:underline" to={`/portal/shipments/${shipment.id}/track`}>
+          <Link
+            className="text-teal-800 hover:underline"
+            to={`/portal/shipments/${shipment.id}/track`}
+          >
             Track shipment
           </Link>
         )}
         {basePath === '/admin' ? (
-          <Link className="text-teal-800 hover:underline" to={`/admin/invoices?q=${encodeURIComponent(shipment.reference)}`}>
+          <Link
+            className="text-teal-800 hover:underline"
+            to={`/admin/invoices?q=${encodeURIComponent(shipment.reference)}`}
+          >
             Related invoices
           </Link>
         ) : (

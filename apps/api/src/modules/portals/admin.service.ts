@@ -12,7 +12,7 @@ type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 type ListAuditQuery = z.infer<typeof listAuditQuerySchema>;
 
 export async function listAdminUsers(pool: Pool, actor: AuthContext, query: ListUsersQuery) {
-  const where = ['u.deleted_at IS NULL', 'm.status = \'ACTIVE\''];
+  const where = ['u.deleted_at IS NULL', "m.status = 'ACTIVE'"];
   const params: unknown[] = [];
   applyUserScope(actor, where, params, query.organizationId);
 
@@ -66,7 +66,7 @@ export async function listAdminUsers(pool: Pool, actor: AuthContext, query: List
 }
 
 export async function getAdminUser(pool: Pool, actor: AuthContext, userId: string) {
-  const where = ['u.deleted_at IS NULL', 'm.status = \'ACTIVE\'', 'u.id = $1'];
+  const where = ['u.deleted_at IS NULL', "m.status = 'ACTIVE'", 'u.id = $1'];
   const params: unknown[] = [userId];
   applyUserScope(actor, where, params);
   const result = await pool.query(
@@ -98,10 +98,10 @@ export async function updateAdminUserStatus(
     throw forbidden('You cannot change the status of your own account');
   }
   const current = await getAdminUser(pool, actor, userId);
-  await pool.query(`UPDATE users SET status = $2::user_status WHERE id = $1 AND deleted_at IS NULL`, [
-    userId,
-    status,
-  ]);
+  await pool.query(
+    `UPDATE users SET status = $2::user_status WHERE id = $1 AND deleted_at IS NULL`,
+    [userId, status],
+  );
   await writeAudit(pool, {
     actorUserId: actor.userId,
     organizationId: current.organizationId,
@@ -225,7 +225,11 @@ export async function listAuditLogs(pool: Pool, actor: AuthContext, query: ListA
   };
 }
 
-export async function listOrganizationUsers(pool: Pool, actor: AuthContext, organizationId: string) {
+export async function listOrganizationUsers(
+  pool: Pool,
+  actor: AuthContext,
+  organizationId: string,
+) {
   return listAdminUsers(pool, actor, {
     organizationId,
     page: 1,

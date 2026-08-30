@@ -1,6 +1,12 @@
 import type { LoginResponse, SessionUser } from '@mizigox/shared';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { apiGet, apiPost, refreshAccessToken, setAccessToken, setUnauthorizedHandler } from '../api/client';
+import {
+  apiGet,
+  apiPost,
+  refreshAccessToken,
+  setAccessToken,
+  setUnauthorizedHandler,
+} from '../api/client';
 
 interface AuthContextValue {
   user: SessionUser | null;

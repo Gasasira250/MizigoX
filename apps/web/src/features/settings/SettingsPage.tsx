@@ -28,15 +28,18 @@ export function SettingsPage() {
     if (!org || !user) return;
     const form = new FormData(event.currentTarget);
     try {
-      const next = await apiPatch<OrganizationSettingsPayload>(`/organizations/${user.organization.id}`, {
-        name: String(form.get('name') ?? org.name),
-        legalName: String(form.get('legalName') || '') || null,
-        email: String(form.get('email') || '') || null,
-        phoneE164: String(form.get('phoneE164') || '') || null,
-        timezone: String(form.get('timezone') || org.timezone),
-        address: String(form.get('address') || '') || null,
-        businessDetails: String(form.get('businessDetails') || '') || null,
-      });
+      const next = await apiPatch<OrganizationSettingsPayload>(
+        `/organizations/${user.organization.id}`,
+        {
+          name: String(form.get('name') ?? org.name),
+          legalName: String(form.get('legalName') || '') || null,
+          email: String(form.get('email') || '') || null,
+          phoneE164: String(form.get('phoneE164') || '') || null,
+          timezone: String(form.get('timezone') || org.timezone),
+          address: String(form.get('address') || '') || null,
+          businessDetails: String(form.get('businessDetails') || '') || null,
+        },
+      );
       setOrg(next);
       notify('Organization settings saved');
     } catch (cause) {
@@ -46,11 +49,23 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Settings" description="Account security, notification preferences, and organization configuration." />
+      <PageHeader
+        title="Settings"
+        description="Account security, notification preferences, and organization configuration."
+      />
       <section>
         <h2 className="mb-3 text-sm font-semibold text-[#12355b]">User settings</h2>
         <div className="space-y-4">
-          <Link className="text-sm text-[#12355b] hover:underline" to={user?.role === 'DRIVER' ? '/driver/profile' : user?.organization.type === 'CUSTOMER' ? '/portal/account' : '/admin/profile'}>
+          <Link
+            className="text-sm text-[#12355b] hover:underline"
+            to={
+              user?.role === 'DRIVER'
+                ? '/driver/profile'
+                : user?.organization.type === 'CUSTOMER'
+                  ? '/portal/account'
+                  : '/admin/profile'
+            }
+          >
             Open full profile
           </Link>
           <NotificationPreferencesPage />
@@ -63,46 +78,85 @@ export function SettingsPage() {
           {!org ? (
             <LoadingState />
           ) : (
-            <form className="space-y-3 rounded-xl border border-slate-200 bg-white p-4" onSubmit={(event) => void onSubmit(event)}>
+            <form
+              className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"
+              onSubmit={(event) => void onSubmit(event)}
+            >
               <label className="block text-sm font-medium">
                 Organization name
-                <input name="name" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.name} required />
+                <input
+                  name="name"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.name}
+                  required
+                />
               </label>
               <label className="block text-sm font-medium">
                 Legal name
-                <input name="legalName" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.legalName ?? ''} />
+                <input
+                  name="legalName"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.legalName ?? ''}
+                />
               </label>
               <label className="block text-sm font-medium">
                 Contact email
-                <input name="email" type="email" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.email ?? ''} />
+                <input
+                  name="email"
+                  type="email"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.email ?? ''}
+                />
               </label>
               <label className="block text-sm font-medium">
                 Phone
-                <input name="phoneE164" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.phoneE164 ?? ''} />
+                <input
+                  name="phoneE164"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.phoneE164 ?? ''}
+                />
               </label>
               <p className="text-sm text-slate-600">
                 Country {org.countryCode} · Currency {org.defaultCurrencyCode}
               </p>
               <label className="block text-sm font-medium">
                 Time zone
-                <input name="timezone" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.timezone} />
+                <input
+                  name="timezone"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.timezone}
+                />
               </label>
               <label className="block text-sm font-medium">
                 Address
-                <textarea name="address" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.address ?? ''} />
+                <textarea
+                  name="address"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.address ?? ''}
+                />
               </label>
               <label className="block text-sm font-medium">
                 Business details
-                <textarea name="businessDetails" className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" defaultValue={org.businessDetails ?? ''} />
+                <textarea
+                  name="businessDetails"
+                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+                  defaultValue={org.businessDetails ?? ''}
+                />
               </label>
-              <button type="submit" className="rounded-md bg-[#12355b] px-4 py-2 text-sm text-white">
+              <button
+                type="submit"
+                className="rounded-md bg-[#12355b] px-4 py-2 text-sm text-white"
+              >
                 Save organization
               </button>
             </form>
           )}
         </section>
       ) : (
-        <p className="text-sm text-slate-500">You can update your own profile and notification preferences. Organization-wide settings require authorization.</p>
+        <p className="text-sm text-slate-500">
+          You can update your own profile and notification preferences. Organization-wide settings
+          require authorization.
+        </p>
       )}
     </div>
   );

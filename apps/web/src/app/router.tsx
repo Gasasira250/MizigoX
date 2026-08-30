@@ -45,7 +45,10 @@ import { FinanceDashboardPage } from '../features/dashboards/FinanceDashboardPag
 import { CustomerDashboardPage } from '../features/dashboards/CustomerDashboardPage';
 import { AdminUsersPage } from '../features/admin/AdminUsersPage';
 import { AdminUserDetailPage } from '../features/admin/AdminUserDetailPage';
-import { AdminOrganizationDetailPage, AdminOrganizationsPage } from '../features/admin/AdminOrganizationsPage';
+import {
+  AdminOrganizationDetailPage,
+  AdminOrganizationsPage,
+} from '../features/admin/AdminOrganizationsPage';
 import { AdminRolesPage } from '../features/admin/AdminRolesPage';
 import { AuditLogsPage } from '../features/admin/AuditLogsPage';
 import { ProfilePage } from '../features/profile/ProfilePage';
@@ -213,9 +216,7 @@ export function AppRouter() {
                 }
               />
               <Route path="preferences" element={<NotificationPreferencesPage />} />
-              <Route
-                element={<RequirePermission anyOf={['notification_delivery.read']} />}
-              >
+              <Route element={<RequirePermission anyOf={['notification_delivery.read']} />}>
                 <Route path="deliveries" element={<NotificationDeliveriesPage />} />
               </Route>
             </Route>
@@ -226,7 +227,10 @@ export function AppRouter() {
           </Route>
           <Route element={<RequirePermission anyOf={['org.settings']} />}>
             <Route path="/admin/organizations" element={<AdminOrganizationsPage />} />
-            <Route path="/admin/organizations/:organizationId" element={<AdminOrganizationDetailPage />} />
+            <Route
+              path="/admin/organizations/:organizationId"
+              element={<AdminOrganizationDetailPage />}
+            />
           </Route>
           <Route element={<RequirePermission anyOf={['users.manage']} />}>
             <Route path="/admin/roles" element={<AdminRolesPage />} />
@@ -263,7 +267,10 @@ export function AppRouter() {
               />
             }
           />
-          <Route path="/portal/notifications/preferences" element={<NotificationPreferencesPage />} />
+          <Route
+            path="/portal/notifications/preferences"
+            element={<NotificationPreferencesPage />}
+          />
           <Route path="/portal/profile" element={<CustomerProfilePage />} />
           <Route path="/portal/account" element={<ProfilePage />} />
           <Route path="/portal/settings" element={<SettingsPage />} />
@@ -286,7 +293,10 @@ export function AppRouter() {
               />
             }
           />
-          <Route path="/driver/notifications/preferences" element={<NotificationPreferencesPage />} />
+          <Route
+            path="/driver/notifications/preferences"
+            element={<NotificationPreferencesPage />}
+          />
           <Route path="/driver/profile" element={<ProfilePage />} />
           <Route path="/driver/settings" element={<SettingsPage />} />
         </Route>

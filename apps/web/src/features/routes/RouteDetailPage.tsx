@@ -363,7 +363,10 @@ export function RouteDetailPage() {
           {route.vehicleId ? (
             <div className="mt-3 space-y-1 text-sm">
               <p className="font-medium">
-                <Link className="text-[#12355b] hover:underline" to={`/admin/vehicles/${route.vehicleId}`}>
+                <Link
+                  className="text-[#12355b] hover:underline"
+                  to={`/admin/vehicles/${route.vehicleId}`}
+                >
                   {route.vehicleRegistration}
                 </Link>
               </p>
@@ -378,7 +381,10 @@ export function RouteDetailPage() {
           {route.driverId ? (
             <div className="mt-3 space-y-1 text-sm">
               <p className="font-medium">
-                <Link className="text-[#12355b] hover:underline" to={`/admin/drivers/${route.driverId}`}>
+                <Link
+                  className="text-[#12355b] hover:underline"
+                  to={`/admin/drivers/${route.driverId}`}
+                >
                   {route.driverName}
                 </Link>
               </p>

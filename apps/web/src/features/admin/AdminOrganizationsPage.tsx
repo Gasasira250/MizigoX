@@ -39,11 +39,17 @@ export function AdminOrganizationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Organizations" description="Tenant organizations visible to your account." />
+      <PageHeader
+        title="Organizations"
+        description="Tenant organizations visible to your account."
+      />
       <ul className="space-y-2">
         {orgs.map((org) => (
           <li key={org.id} className="rounded-xl border border-slate-200 bg-white p-4">
-            <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/organizations/${org.id}`}>
+            <Link
+              className="font-medium text-[#12355b] hover:underline"
+              to={`/admin/organizations/${org.id}`}
+            >
               {org.name}
             </Link>
             <p className="text-sm text-slate-500">{org.type}</p>
@@ -99,7 +105,10 @@ export function AdminOrganizationDetailPage() {
           <ul className="mt-3 divide-y divide-slate-100">
             {users.map((item) => (
               <li key={item.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/users/${item.id}`}>
+                <Link
+                  className="font-medium text-[#12355b] hover:underline"
+                  to={`/admin/users/${item.id}`}
+                >
                   {item.firstName} {item.lastName}
                 </Link>
                 <span className="text-slate-500">{item.role.replaceAll('_', ' ')}</span>

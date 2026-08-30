@@ -32,7 +32,9 @@ export function DriverShipmentPage() {
       const next = await apiGet<ShipmentPayload>(`/shipments/${shipmentId}`);
       setShipment(next);
       setError(null);
-      const existing = await apiGet<ProofOfDeliveryPayload>(`/pod/shipments/${shipmentId}`).catch(() => null);
+      const existing = await apiGet<ProofOfDeliveryPayload>(`/pod/shipments/${shipmentId}`).catch(
+        () => null,
+      );
       setPod(existing);
     } catch (cause) {
       setError(formatAppError(cause, 'Unable to load shipment'));
@@ -41,6 +43,7 @@ export function DriverShipmentPage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipmentId]);
 
   function point(event: React.PointerEvent<HTMLCanvasElement>) {
@@ -129,17 +132,24 @@ export function DriverShipmentPage() {
       />
       <section className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
         <p>
-          Pickup: {shipment.origin?.formattedAddress ?? shipment.pickup.address?.formattedAddress ?? '—'}
+          Pickup:{' '}
+          {shipment.origin?.formattedAddress ?? shipment.pickup.address?.formattedAddress ?? '—'}
         </p>
         <p className="mt-1">
-          Delivery: {shipment.destination?.formattedAddress ?? shipment.delivery.address?.formattedAddress ?? '—'}
+          Delivery:{' '}
+          {shipment.destination?.formattedAddress ??
+            shipment.delivery.address?.formattedAddress ??
+            '—'}
         </p>
         <p className="mt-2">{shipment.cargoDescription}</p>
         {shipment.specialInstructions ? (
           <p className="mt-2 rounded-md bg-slate-50 px-3 py-2">{shipment.specialInstructions}</p>
         ) : null}
         {shipment.currentRoute ? (
-          <Link className="mt-3 inline-block text-[#12355b] hover:underline" to={`/driver/trips/${shipment.currentRoute.id}`}>
+          <Link
+            className="mt-3 inline-block text-[#12355b] hover:underline"
+            to={`/driver/trips/${shipment.currentRoute.id}`}
+          >
             Open route {shipment.currentRoute.reference}
           </Link>
         ) : null}
@@ -199,7 +209,8 @@ export function DriverShipmentPage() {
             />
           </div>
           <p className="text-xs text-slate-500">
-            Location is captured from this device when permission is granted. Coordinates are never invented.
+            Location is captured from this device when permission is granted. Coordinates are never
+            invented.
           </p>
           <button
             type="submit"
@@ -210,7 +221,9 @@ export function DriverShipmentPage() {
           </button>
         </form>
       ) : (
-        <p className="text-sm text-slate-500">This shipment is not ready for delivery confirmation.</p>
+        <p className="text-sm text-slate-500">
+          This shipment is not ready for delivery confirmation.
+        </p>
       )}
     </div>
   );

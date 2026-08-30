@@ -1,5 +1,10 @@
 import type { OperationsDashboardPayload } from '@mizigox/shared';
-import { can, canCreateShipments, canDispatchRoutes, canReadFinanceDashboard } from '@mizigox/shared';
+import {
+  can,
+  canCreateShipments,
+  canDispatchRoutes,
+  canReadFinanceDashboard,
+} from '@mizigox/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiGet } from '../../shared/api/client';
@@ -57,7 +62,12 @@ export function OperationsDashboardPage() {
     return <ErrorState message={error} onRetry={() => void load()} />;
   }
   if (!data) {
-    return <EmptyState title="Dashboard unavailable" detail="No operations metrics are available for this role." />;
+    return (
+      <EmptyState
+        title="Dashboard unavailable"
+        detail="No operations metrics are available for this role."
+      />
+    );
   }
 
   return (
@@ -68,27 +78,55 @@ export function OperationsDashboardPage() {
       />
       <QuickActions
         actions={[
-          { label: 'New shipment', href: '/admin/shipments/new', hidden: !canCreateShipments(user?.permissions) },
-          { label: 'Dispatch board', href: '/admin/dispatch', hidden: !canDispatchRoutes(user?.permissions) },
+          {
+            label: 'New shipment',
+            href: '/admin/shipments/new',
+            hidden: !canCreateShipments(user?.permissions),
+          },
+          {
+            label: 'Dispatch board',
+            href: '/admin/dispatch',
+            hidden: !canDispatchRoutes(user?.permissions),
+          },
           { label: 'Live tracking', href: '/admin/tracking' },
         ]}
       />
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Active shipments" value={data.shipments.active} href="/admin/shipments" />
+        <MetricCard
+          label="Active shipments"
+          value={data.shipments.active}
+          href="/admin/shipments"
+        />
         <MetricCard label="Awaiting pickup" value={data.shipments.awaitingPickup} />
         <MetricCard label="In transit" value={data.shipments.inTransit} />
         <MetricCard label="Out for delivery" value={data.shipments.outForDelivery} />
         <MetricCard label="Delivered" value={data.shipments.delivered} />
         <MetricCard label="Delivery failures" value={data.shipments.deliveryFailed} />
         <MetricCard label="Active routes" value={data.routes.active} href="/admin/routes" />
-        <MetricCard label="Awaiting dispatch" value={data.routes.awaitingDispatch} href="/admin/dispatch" />
-        <MetricCard label="Available vehicles" value={data.fleet.availableVehicles} href="/admin/vehicles" />
-        <MetricCard label="Available drivers" value={data.fleet.availableDrivers} href="/admin/drivers" />
+        <MetricCard
+          label="Awaiting dispatch"
+          value={data.routes.awaitingDispatch}
+          href="/admin/dispatch"
+        />
+        <MetricCard
+          label="Available vehicles"
+          value={data.fleet.availableVehicles}
+          href="/admin/vehicles"
+        />
+        <MetricCard
+          label="Available drivers"
+          value={data.fleet.availableDrivers}
+          href="/admin/drivers"
+        />
         <MetricCard label="Overdue shipments" value={data.shipments.overdue} />
         <MetricCard
           label="Live vehicles"
           value={data.tracking.liveVehicles}
-          detail={data.tracking.lastUpdateAt ? `Last update ${new Date(data.tracking.lastUpdateAt).toLocaleString()}` : 'No location updates'}
+          detail={
+            data.tracking.lastUpdateAt
+              ? `Last update ${new Date(data.tracking.lastUpdateAt).toLocaleString()}`
+              : 'No location updates'
+          }
         />
       </section>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -103,8 +141,14 @@ export function OperationsDashboardPage() {
           ) : (
             <ul className="mt-3 divide-y divide-slate-100">
               {data.recentShipments.map((shipment) => (
-                <li key={shipment.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/shipments/${shipment.id}`}>
+                <li
+                  key={shipment.id}
+                  className="flex items-center justify-between gap-3 py-2 text-sm"
+                >
+                  <Link
+                    className="font-medium text-[#12355b] hover:underline"
+                    to={`/admin/shipments/${shipment.id}`}
+                  >
                     {shipment.reference}
                   </Link>
                   <StatusBadge status={shipment.status} />
@@ -121,7 +165,10 @@ export function OperationsDashboardPage() {
             <ul className="mt-3 divide-y divide-slate-100">
               {data.recentRoutes.map((route) => (
                 <li key={route.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/routes/${route.id}`}>
+                  <Link
+                    className="font-medium text-[#12355b] hover:underline"
+                    to={`/admin/routes/${route.id}`}
+                  >
                     {route.reference}
                   </Link>
                   <StatusBadge status={route.status} />
