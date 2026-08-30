@@ -5,6 +5,7 @@ export * from './fleet.js';
 export * from './http.js';
 export * from './notifications.js';
 export * from './permissions.js';
+export * from './portals.js';
 export * from './reference-data.js';
 export * from './routes.js';
 export * from './shipments.js';

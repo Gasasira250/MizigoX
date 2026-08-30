@@ -50,6 +50,9 @@ export const PERMISSIONS = [
   'payments.record',
   'payments.refund',
   'payments.update',
+  'pod.create',
+  'pod.manage',
+  'pod.read',
   'routes.create',
   'routes.delete',
   'routes.dispatch',
@@ -58,6 +61,7 @@ export const PERMISSIONS = [
   'routes.status_update',
   'routes.update',
   'routes.view_history',
+  'search.read',
   'shipments.assign',
   'shipments.create',
   'shipments.delete',
@@ -74,6 +78,7 @@ export const PERMISSIONS = [
   'tracking.view_history',
   'tracking.view_live',
   'users.manage',
+  'users.read',
   'vehicle_documents.create',
   'vehicle_documents.delete',
   'vehicle_documents.manage',
@@ -168,6 +173,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'drivers.update',
     'fleet.manage',
     'org.settings',
+    'pod.manage',
+    'pod.read',
     'routes.create',
     'routes.delete',
     'routes.dispatch',
@@ -213,6 +220,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notifications.manage',
     'notifications.read',
     'notifications.retry',
+    'search.read',
+    'users.read',
   ],
   FINANCE_ADMIN: [
     'audit.read',
@@ -249,6 +258,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'search.read',
   ],
   COMPANY_ADMIN: [
     'countries.read',
@@ -303,6 +313,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'vehicles.status_update',
     'vehicles.update',
     'org.settings',
+    'pod.create',
+    'pod.manage',
+    'pod.read',
     'payments.create',
     'payments.manage',
     'payments.read',
@@ -332,6 +345,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notifications.manage',
     'notifications.read',
     'notifications.retry',
+    'search.read',
+    'users.read',
   ],
   LOGISTICS_MANAGER: [
     'countries.read',
@@ -391,6 +406,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'pod.manage',
+    'pod.read',
+    'search.read',
   ],
   FINANCE_OFFICER: [
     'countries.read',
@@ -426,6 +444,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'search.read',
   ],
   DRIVER: [
     'countries.read',
@@ -440,6 +459,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'pod.create',
+    'pod.read',
+    'search.read',
   ],
   CUSTOMER_ADMIN: [
     'countries.read',
@@ -455,6 +477,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'search.read',
+    'users.read',
   ],
   CUSTOMER_USER: [
     'countries.read',
@@ -468,5 +492,70 @@ export const ROLE_PERMISSIONS: Record<RoleCode, readonly PermissionCode[]> = {
     'notification_preferences.read',
     'notification_preferences.update',
     'notifications.read',
+    'search.read',
   ],
 };
+
+export function normalizePermission(code: string): string {
+  return code.replaceAll(':', '.');
+}
+
+export function can(granted: readonly string[] | undefined, permission: string) {
+  if (!granted?.length) {
+    return false;
+  }
+  const needed = normalizePermission(permission);
+  if (granted.includes(needed)) {
+    return true;
+  }
+  const resource = needed.split('.')[0];
+  return Boolean(resource && granted.includes(`${resource}.manage`));
+}
+
+export function canAny(granted: readonly string[] | undefined, ...permissions: string[]) {
+  return permissions.some((permission) => can(granted, permission));
+}
+
+export function canAll(granted: readonly string[] | undefined, ...permissions: string[]) {
+  return permissions.every((permission) => can(granted, permission));
+}
+
+export function canReadPod(granted: readonly string[] | undefined) {
+  return canAny(granted, 'pod.read', 'pod.manage', 'shipments.upload_pod');
+}
+
+export function canCreatePod(granted: readonly string[] | undefined) {
+  return canAny(granted, 'pod.create', 'pod.manage', 'shipments.upload_pod');
+}
+
+export function canManagePod(granted: readonly string[] | undefined) {
+  return can(granted, 'pod.manage');
+}
+
+export function canSearch(granted: readonly string[] | undefined) {
+  return can(granted, 'search.read');
+}
+
+export function canReadUsers(granted: readonly string[] | undefined) {
+  return canAny(granted, 'users.read', 'users.manage');
+}
+
+export function canManageUsers(granted: readonly string[] | undefined) {
+  return can(granted, 'users.manage');
+}
+
+export function canReadOperationsDashboard(granted: readonly string[] | undefined) {
+  return can(granted, 'dashboard.operations');
+}
+
+export function canReadFinanceDashboard(granted: readonly string[] | undefined) {
+  return can(granted, 'dashboard.finance');
+}
+
+export function canManageOrgSettings(granted: readonly string[] | undefined) {
+  return can(granted, 'org.settings');
+}
+
+export function canReadAudit(granted: readonly string[] | undefined) {
+  return can(granted, 'audit.read');
+}

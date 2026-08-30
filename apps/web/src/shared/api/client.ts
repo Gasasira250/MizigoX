@@ -4,6 +4,11 @@ const API_BASE = '/api/v1';
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string | null> | null = null;
+let unauthorizedHandler: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
+}
 
 export class ApiError extends Error {
   readonly status: number;
@@ -67,6 +72,7 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
     if (nextToken) {
       return request<T>(path, init, false);
     }
+    unauthorizedHandler?.();
   }
 
   const body = await parseBody(response);

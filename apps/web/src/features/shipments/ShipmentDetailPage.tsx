@@ -125,7 +125,14 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
             <StatusBadge status={shipment.priority} />
           </div>
           <p className="mt-1 text-sm text-slate-600">
-            {shipment.customerName} · {shipmentTypeLabel(shipment.shipmentType)}
+            {basePath === '/admin' ? (
+              <Link className="hover:underline" to={`/admin/customers/${shipment.customerOrganizationId}`}>
+                {shipment.customerName}
+              </Link>
+            ) : (
+              shipment.customerName
+            )}{' '}
+            · {shipmentTypeLabel(shipment.shipmentType)}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -157,6 +164,40 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
           ) : null}
         </div>
       </div>
+
+      <section className="flex flex-wrap gap-3 text-sm">
+        {basePath === '/admin' ? (
+          <Link className="text-teal-800 hover:underline" to={`/admin/customers/${shipment.customerOrganizationId}`}>
+            Customer record
+          </Link>
+        ) : null}
+        {shipment.currentRoute ? (
+          <Link
+            className="text-teal-800 hover:underline"
+            to={basePath === '/admin' ? `/admin/routes/${shipment.currentRoute.id}` : `${basePath}/shipments/${shipment.id}`}
+          >
+            Route {shipment.currentRoute.reference}
+          </Link>
+        ) : null}
+        {basePath === '/admin' ? (
+          <Link className="text-teal-800 hover:underline" to={`/admin/tracking/shipments/${shipment.id}`}>
+            Live tracking
+          </Link>
+        ) : (
+          <Link className="text-teal-800 hover:underline" to={`/portal/shipments/${shipment.id}/track`}>
+            Track shipment
+          </Link>
+        )}
+        {basePath === '/admin' ? (
+          <Link className="text-teal-800 hover:underline" to={`/admin/invoices?q=${encodeURIComponent(shipment.reference)}`}>
+            Related invoices
+          </Link>
+        ) : (
+          <Link className="text-teal-800 hover:underline" to="/portal/invoices">
+            Invoices
+          </Link>
+        )}
+      </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <OverviewCard label="Customer" value={shipment.customerName} />
@@ -193,7 +234,7 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
             </label>
             <div className="flex flex-wrap gap-2">
               {transitions
-                .filter((status) => status !== 'CANCELLED')
+                .filter((status) => status !== 'CANCELLED' && status !== 'DELIVERED')
                 .map((status) => (
                   <button
                     key={status}

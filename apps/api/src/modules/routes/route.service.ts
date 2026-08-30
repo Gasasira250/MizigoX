@@ -20,6 +20,7 @@ import type { Pool, PoolClient } from 'pg';
 import { insertAddress, toNumber } from '../../lib/addresses.js';
 import { writeAudit } from '../../lib/audit.js';
 import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.js';
+import { getLinkedDriver } from '../../lib/linked-driver.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import { applyOperatorFilter, assertOperatorAccess } from '../fleet/tenant.js';
 import { insertTrackingEvent } from '../tracking/tracking.service.js';
@@ -156,6 +157,7 @@ export async function listRoutes(pool: Pool, actor: AuthContext, query: ListRout
   const params: unknown[] = [];
   const where = ['r.deleted_at IS NULL'];
   applyRouteVisibility(actor, where, params, 'r.organization_id', 'r.id');
+  await applyDriverRouteFilter(pool, actor, where, params, 'r.id');
 
   if (query.status) {
     params.push(query.status);
@@ -1716,12 +1718,38 @@ function applyRouteVisibility(
   `);
 }
 
+async function applyDriverRouteFilter(
+  pool: Pool,
+  actor: AuthContext,
+  where: string[],
+  params: unknown[],
+  routeIdColumn: string,
+) {
+  if (actor.role !== 'DRIVER') {
+    return;
+  }
+  const driver = await getLinkedDriver(pool, actor, { required: true });
+  params.push(driver!.id);
+  where.push(`${routeIdColumn === 'r.id' ? 'r.driver_id' : 'driver_id'} = $${params.length}`);
+}
+
 async function assertRouteAccess(
   pool: Pool,
   actor: AuthContext,
   organizationId: string,
   routeId: string,
 ) {
+  if (actor.role === 'DRIVER') {
+    const driver = await getLinkedDriver(pool, actor, { required: true });
+    const assigned = await pool.query(
+      `SELECT id FROM routes WHERE id = $1 AND driver_id = $2 AND deleted_at IS NULL`,
+      [routeId, driver!.id],
+    );
+    if (!assigned.rows[0]) {
+      throw forbidden('You do not have access to this route');
+    }
+    return;
+  }
   if (actor.orgType === 'PLATFORM') {
     return;
   }

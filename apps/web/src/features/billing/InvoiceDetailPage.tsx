@@ -107,7 +107,14 @@ export function InvoiceDetailPage({ basePath }: { basePath: '/admin' | '/portal'
             <StatusBadge status={invoice.status} />
           </div>
           <p className="mt-1 text-sm text-slate-600">
-            {invoice.customerName} · {invoice.organizationName} · {invoice.currencyCode}
+            {isAdmin ? (
+              <Link className="hover:underline" to={`/admin/customers/${invoice.customerOrganizationId}`}>
+                {invoice.customerName}
+              </Link>
+            ) : (
+              invoice.customerName
+            )}{' '}
+            · {invoice.organizationName} · {invoice.currencyCode}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

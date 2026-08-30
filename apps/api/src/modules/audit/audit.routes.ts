@@ -4,6 +4,8 @@ import { asyncHandler } from '../../lib/async-handler.js';
 import { sendSuccess } from '../../lib/http.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/authorize.js';
+import { listAuditLogs } from '../portals/admin.service.js';
+import { listAuditQuerySchema } from '../portals/portals.schemas.js';
 
 export const auditRouter = Router();
 
@@ -12,17 +14,12 @@ auditRouter.use(authenticate, requirePermission('audit.read'));
 auditRouter.get(
   '/',
   asyncHandler(async (req, res) => {
-    const limit = Math.min(Number(req.query.limit ?? 25), 100);
-    const result = await getPool().query(
-      `
-        SELECT id, actor_user_id, organization_id, action, entity_type, entity_id,
-               created_at, request_id
-        FROM audit_logs
-        ORDER BY created_at DESC
-        LIMIT $1
-      `,
-      [limit],
-    );
-    sendSuccess(res, result.rows, 200, { page: 1, pageSize: limit, total: result.rowCount ?? 0 });
+    const query = listAuditQuerySchema.parse(req.query);
+    const result = await listAuditLogs(getPool(), req.auth!, query);
+    sendSuccess(res, result.logs, 200, {
+      page: result.page,
+      pageSize: result.pageSize,
+      total: result.total,
+    });
   }),
 );

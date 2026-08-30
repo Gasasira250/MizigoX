@@ -70,13 +70,24 @@ identityRouter.get(
 
     const result = await getPool().query(
       `
-        SELECT id, type, name, legal_name, country_code, default_currency_code, status
+        SELECT id, type::text AS type, name, legal_name, country_code, default_currency_code, status::text AS status
         FROM organizations
         WHERE ${where}
         ORDER BY name
       `,
       params,
     );
-    sendSuccess(res, result.rows);
+    sendSuccess(
+      res,
+      result.rows.map((row) => ({
+        id: row.id,
+        type: row.type,
+        name: row.name,
+        legalName: row.legal_name,
+        countryCode: row.country_code,
+        defaultCurrencyCode: row.default_currency_code,
+        status: row.status,
+      })),
+    );
   }),
 );

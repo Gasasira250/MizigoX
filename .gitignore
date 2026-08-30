@@ -32,3 +32,6 @@ pnpm-debug.log*
 # Test artifacts
 playwright-report
 test-results
+
+# Local proof-of-delivery / document storage
+var/storage

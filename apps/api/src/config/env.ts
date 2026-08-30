@@ -102,6 +102,8 @@ const envSchema = z.object({
   SMS_API_KEY: z.string().optional(),
   SMS_FROM: z.string().optional(),
   PUSH_FCM_SERVER_KEY: z.string().optional(),
+  STORAGE_PROVIDER: z.enum(['local', 'none']).default('local'),
+  STORAGE_LOCAL_DIR: z.string().min(1).default('var/storage'),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
