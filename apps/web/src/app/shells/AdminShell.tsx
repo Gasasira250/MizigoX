@@ -1,13 +1,15 @@
 import {
   canReadCustomers,
+  canReadDispatch,
   canReadDrivers,
+  canReadRoutes,
   canReadShipments,
   canReadVehicles,
 } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
-const later = ['Routes', 'Tracking', 'Invoices'];
+const later = ['Tracking', 'Invoices'];
 
 export function AdminShell() {
   const { user, logout } = useAuth();
@@ -15,6 +17,8 @@ export function AdminShell() {
   const canShipments = canReadShipments(user?.permissions);
   const canVehicles = canReadVehicles(user?.permissions);
   const canDrivers = canReadDrivers(user?.permissions);
+  const canRoutes = canReadRoutes(user?.permissions);
+  const canDispatch = canReadDispatch(user?.permissions);
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -92,6 +96,26 @@ export function AdminShell() {
                 }
               >
                 Drivers
+              </NavLink>
+            ) : null}
+            {canRoutes ? (
+              <NavLink
+                to="/admin/routes"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Routes
+              </NavLink>
+            ) : null}
+            {canDispatch ? (
+              <NavLink
+                to="/admin/dispatch"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Dispatch
               </NavLink>
             ) : null}
             {later.map((item) => (

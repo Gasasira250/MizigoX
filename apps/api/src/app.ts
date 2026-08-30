@@ -15,6 +15,8 @@ import { shipmentRouter } from './modules/shipments/shipment.routes.js';
 import { vehicleRouter } from './modules/vehicles/vehicle.routes.js';
 import { driverRouter } from './modules/drivers/driver.routes.js';
 import { fleetRouter } from './modules/fleet/fleet.routes.js';
+import { routeRouter } from './modules/routes/route.routes.js';
+import { dispatchRouter } from './modules/dispatch/dispatch.routes.js';
 
 export function createApp() {
   const env = getEnv();
@@ -44,6 +46,8 @@ export function createApp() {
   app.use('/api/v1/vehicles', vehicleRouter);
   app.use('/api/v1/drivers', driverRouter);
   app.use('/api/v1/fleet', fleetRouter);
+  app.use('/api/v1/routes', routeRouter);
+  app.use('/api/v1/dispatch', dispatchRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);
