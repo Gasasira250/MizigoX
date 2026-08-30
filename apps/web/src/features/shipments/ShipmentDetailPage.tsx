@@ -16,6 +16,7 @@ import { useAuth } from '../../shared/auth/AuthProvider';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { useToast } from '../../shared/ui/ToastProvider';
+import { ShipmentTrackingPanel } from '../tracking/ShipmentTrackingPanel';
 import { formatApiError, formatDate, formatStop } from './form-utils';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -304,6 +305,13 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
             ))}
           </ol>
         )}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-[#12355b]">Tracking</h2>
+        <div className="mt-4">
+          <ShipmentTrackingPanel shipmentId={shipment.id} basePath={basePath} />
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">

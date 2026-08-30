@@ -514,12 +514,18 @@ export function RouteDetailPage() {
             </div>
           ) : null}
         </article>
-        <article className="rounded-xl border border-dashed border-slate-300 bg-white p-5">
+        <article className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-[#12355b]">Tracking</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Live GPS tracking will be added in Phase 8. This route is not streaming location updates
-            yet.
+          <p className="mt-2 text-sm text-slate-600">
+            Vehicle location and freshness for this route are available on the route tracking page.
+            No placeholder GPS positions are shown here.
           </p>
+          <Link
+            className="mt-3 inline-block text-sm text-teal-800 hover:underline"
+            to={`/admin/tracking/routes/${route.id}`}
+          >
+            Open route tracking
+          </Link>
         </article>
       </section>
 

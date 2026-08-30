@@ -17,6 +17,11 @@ export function PortalShell({ title }: { title: string }) {
               Shipments
             </NavLink>
           ) : null}
+          {title === 'Driver portal' ? (
+            <NavLink className="text-slate-700 hover:underline" to="/driver">
+              Tracking
+            </NavLink>
+          ) : null}
           <span className="text-slate-600">
             {user?.firstName} {user?.lastName}
           </span>

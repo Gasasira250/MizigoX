@@ -17,6 +17,8 @@ import { driverRouter } from './modules/drivers/driver.routes.js';
 import { fleetRouter } from './modules/fleet/fleet.routes.js';
 import { routeRouter } from './modules/routes/route.routes.js';
 import { dispatchRouter } from './modules/dispatch/dispatch.routes.js';
+import { trackingRouter } from './modules/tracking/tracking.routes.js';
+import { publicTrackingRouter } from './modules/tracking/public-tracking.routes.js';
 
 export function createApp() {
   const env = getEnv();
@@ -48,6 +50,8 @@ export function createApp() {
   app.use('/api/v1/fleet', fleetRouter);
   app.use('/api/v1/routes', routeRouter);
   app.use('/api/v1/dispatch', dispatchRouter);
+  app.use('/api/v1/tracking', trackingRouter);
+  app.use('/api/v1/public/track', publicTrackingRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);

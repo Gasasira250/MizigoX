@@ -5,11 +5,13 @@ import {
   canReadRoutes,
   canReadShipments,
   canReadVehicles,
+  canReadTracking,
+  canViewLiveTracking,
 } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
 
-const later = ['Tracking', 'Invoices'];
+const later = ['Invoices'];
 
 export function AdminShell() {
   const { user, logout } = useAuth();
@@ -19,6 +21,8 @@ export function AdminShell() {
   const canDrivers = canReadDrivers(user?.permissions);
   const canRoutes = canReadRoutes(user?.permissions);
   const canDispatch = canReadDispatch(user?.permissions);
+  const canTracking = canReadTracking(user?.permissions);
+  const canLive = canViewLiveTracking(user?.permissions);
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -116,6 +120,26 @@ export function AdminShell() {
                 }
               >
                 Dispatch
+              </NavLink>
+            ) : null}
+            {canTracking ? (
+              <NavLink
+                to="/admin/tracking"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Tracking
+              </NavLink>
+            ) : null}
+            {canLive ? (
+              <NavLink
+                to="/admin/tracking/live"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Live Tracking
               </NavLink>
             ) : null}
             {later.map((item) => (

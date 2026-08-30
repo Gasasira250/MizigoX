@@ -8,9 +8,15 @@ interface Bucket {
 
 const buckets = new Map<string, Bucket>();
 
-export function rateLimit(options: { windowMs: number; max: number; keyPrefix: string }) {
+export function rateLimit(options: {
+  windowMs: number;
+  max: number;
+  keyPrefix: string;
+  keyFn?: (req: Request) => string;
+}) {
   return (req: Request, _res: Response, next: NextFunction) => {
-    const key = `${options.keyPrefix}:${req.ip ?? 'unknown'}`;
+    const identity = options.keyFn?.(req) ?? req.ip ?? 'unknown';
+    const key = `${options.keyPrefix}:${identity}`;
     const now = Date.now();
     const current = buckets.get(key);
 

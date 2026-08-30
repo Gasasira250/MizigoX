@@ -22,6 +22,7 @@ import { writeAudit } from '../../lib/audit.js';
 import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import { applyOperatorFilter, assertOperatorAccess } from '../fleet/tenant.js';
+import { insertTrackingEvent } from '../tracking/tracking.service.js';
 import type { z } from 'zod';
 import type {
   createRouteSchema,
@@ -505,6 +506,26 @@ export async function updateRouteStatus(
       description: input.note ?? `Status changed from ${current.status} to ${input.status}`,
       actorUserId: actor.userId,
     });
+    if (input.status === 'IN_TRANSIT') {
+      await insertTrackingEvent(client, {
+        organizationId: current.organizationId,
+        type: 'TRIP_STARTED',
+        vehicleId: current.vehicleId,
+        driverId: current.driverId,
+        routeId,
+        description: `Trip started for ${current.reference}`,
+        actorUserId: actor.userId,
+      });
+      await insertTrackingEvent(client, {
+        organizationId: current.organizationId,
+        type: 'VEHICLE_DEPARTED',
+        vehicleId: current.vehicleId,
+        driverId: current.driverId,
+        routeId,
+        description: `Vehicle departed on ${current.reference}`,
+        actorUserId: actor.userId,
+      });
+    }
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
@@ -862,6 +883,24 @@ export async function updateRouteStop(
       input.formattedAddress ?? null,
     ],
   );
+  if (input.status === 'ARRIVED' || input.status === 'SERVICED') {
+    await insertTrackingEvent(pool, {
+      organizationId: current.organizationId,
+      type: input.status === 'ARRIVED' ? 'STOP_ARRIVED' : 'STOP_COMPLETED',
+      vehicleId: current.vehicleId,
+      driverId: current.driverId,
+      routeId,
+      shipmentId: existing.shipmentId,
+      stopId,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      description:
+        input.status === 'ARRIVED'
+          ? `Arrived at stop ${existing.sequence}`
+          : `Completed stop ${existing.sequence}`,
+      actorUserId: actor.userId,
+    });
+  }
   await writeAudit(pool, {
     actorUserId: actor.userId,
     organizationId: current.organizationId,

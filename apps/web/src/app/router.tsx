@@ -18,8 +18,13 @@ import { RouteDetailPage } from '../features/routes/RouteDetailPage';
 import { RouteFormPage } from '../features/routes/RouteFormPage';
 import { RouteTimelinePage } from '../features/routes/RouteTimelinePage';
 import { RoutesPage } from '../features/routes/RoutesPage';
+import { DriverTrackingPage } from '../features/tracking/DriverTrackingPage';
+import { LiveTrackingPage } from '../features/tracking/LiveTrackingPage';
+import { PublicTrackPage } from '../features/tracking/PublicTrackPage';
+import { RouteTrackingPage } from '../features/tracking/RouteTrackingPage';
+import { ShipmentTrackingPage } from '../features/tracking/ShipmentTrackingPage';
+import { VehicleTrackingPage } from '../features/tracking/VehicleTrackingPage';
 import { FoundationPage } from '../features/system/FoundationPage';
-import { LaterPhasePage } from '../features/system/LaterPhasePage';
 import { useAuth } from '../shared/auth/AuthProvider';
 import { homePathFor } from '../shared/auth/home-path';
 import { AdminShell } from './shells/AdminShell';
@@ -108,6 +113,13 @@ export function AppRouter() {
             <Route path=":routeId" element={<RouteDetailPage />} />
           </Route>
           <Route path="/admin/dispatch" element={<DispatchBoardPage />} />
+          <Route path="/admin/tracking">
+            <Route index element={<LiveTrackingPage />} />
+            <Route path="live" element={<LiveTrackingPage />} />
+            <Route path="vehicles/:vehicleId" element={<VehicleTrackingPage />} />
+            <Route path="routes/:routeId" element={<RouteTrackingPage />} />
+            <Route path="shipments/:shipmentId" element={<ShipmentTrackingPage />} />
+          </Route>
         </Route>
       </Route>
 
@@ -125,19 +137,11 @@ export function AppRouter() {
 
       <Route element={<RequireAuth allow={['driver']} />}>
         <Route element={<PortalShell title="Driver portal" />}>
-          <Route
-            path="/driver"
-            element={
-              <LaterPhasePage
-                title="Driver portal"
-                phase="Later phase"
-                description="Drivers will see assigned trips, update status, and upload proof of delivery here."
-              />
-            }
-          />
+          <Route path="/driver" element={<DriverTrackingPage />} />
         </Route>
       </Route>
 
+      <Route path="/track/:token" element={<PublicTrackPage />} />
       <Route path="/" element={<RootRedirect />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
