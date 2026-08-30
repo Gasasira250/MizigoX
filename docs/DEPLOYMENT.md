@@ -33,6 +33,7 @@ There must be no localhost API URLs in the production bundle. `VITE_*` values ar
 ```bash
 npm run build -w @mizigox/shared
 npm run build -w @mizigox/api
+# copies SQL migrations into dist/db/migrations
 npm run db:migrate -w @mizigox/api   # after backup
 NODE_ENV=production APP_ENV=production npm run start -w @mizigox/api
 ```
