@@ -13,6 +13,11 @@ import { ShipmentsPage } from '../features/shipments/ShipmentsPage';
 import { VehicleDetailPage } from '../features/vehicles/VehicleDetailPage';
 import { VehicleFormPage } from '../features/vehicles/VehicleFormPage';
 import { VehiclesPage } from '../features/vehicles/VehiclesPage';
+import { DispatchBoardPage } from '../features/dispatch/DispatchBoardPage';
+import { RouteDetailPage } from '../features/routes/RouteDetailPage';
+import { RouteFormPage } from '../features/routes/RouteFormPage';
+import { RouteTimelinePage } from '../features/routes/RouteTimelinePage';
+import { RoutesPage } from '../features/routes/RoutesPage';
 import { FoundationPage } from '../features/system/FoundationPage';
 import { LaterPhasePage } from '../features/system/LaterPhasePage';
 import { useAuth } from '../shared/auth/AuthProvider';
@@ -95,6 +100,14 @@ export function AppRouter() {
             <Route path=":driverId/documents" element={<DriverDetailPage />} />
             <Route path=":driverId" element={<DriverDetailPage />} />
           </Route>
+          <Route path="/admin/routes">
+            <Route index element={<RoutesPage />} />
+            <Route path="new" element={<RouteFormPage />} />
+            <Route path=":routeId/edit" element={<RouteFormPage />} />
+            <Route path=":routeId/timeline" element={<RouteTimelinePage />} />
+            <Route path=":routeId" element={<RouteDetailPage />} />
+          </Route>
+          <Route path="/admin/dispatch" element={<DispatchBoardPage />} />
         </Route>
       </Route>
 

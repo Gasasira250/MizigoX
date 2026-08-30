@@ -314,12 +314,30 @@ export function ShipmentDetailPage({ basePath }: { basePath: '/admin' | '/portal
             phase.
           </p>
         </article>
-        <article className="rounded-xl border border-dashed border-slate-300 bg-white p-5">
+        <article className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-[#12355b]">Assignment</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Vehicle and driver assignment is reserved for the next operational phase. This shipment
-            is not assigned yet.
-          </p>
+          {shipment.currentRoute ? (
+            <div className="mt-3 space-y-2 text-sm">
+              <p className="font-medium text-slate-900">{shipment.currentRoute.reference}</p>
+              <StatusBadge status={shipment.currentRoute.status} />
+              {basePath === '/admin' ? (
+                <p>
+                  <Link
+                    className="text-teal-800 hover:underline"
+                    to={`/admin/routes/${shipment.currentRoute.id}`}
+                  >
+                    View route
+                  </Link>
+                </p>
+              ) : (
+                <p className="text-slate-500">Assigned to an active route.</p>
+              )}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-slate-500">
+              This shipment is not assigned to an active route.
+            </p>
+          )}
         </article>
       </section>
 

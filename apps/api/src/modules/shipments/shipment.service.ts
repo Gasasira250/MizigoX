@@ -256,7 +256,7 @@ export async function loadShipment(
     String(row.operator_organization_id),
   );
 
-  const [origin, destination, items, events] = await Promise.all([
+  const [origin, destination, items, events, currentRoute] = await Promise.all([
     loadAddress(pool, (row.origin_address_id as string | null) ?? null),
     loadAddress(pool, (row.destination_address_id as string | null) ?? null),
     pool.query(
@@ -278,6 +278,19 @@ export async function loadShipment(
         LEFT JOIN users u ON u.id = e.actor_user_id
         WHERE e.shipment_id = $1
         ORDER BY e.occurred_at ASC
+      `,
+      [shipmentId],
+    ),
+    pool.query<{ id: string; reference: string; status: string }>(
+      `
+        SELECT r.id, r.reference, r.status::text AS status
+        FROM route_shipments rs
+        JOIN routes r ON r.id = rs.route_id
+        WHERE rs.shipment_id = $1
+          AND r.deleted_at IS NULL
+          AND r.status::text NOT IN ('COMPLETED', 'CANCELLED')
+        ORDER BY r.updated_at DESC
+        LIMIT 1
       `,
       [shipmentId],
     ),
@@ -330,6 +343,13 @@ export async function loadShipment(
     createdByName: (row.created_by_name as string | null) ?? null,
     createdAt: (row.created_at as Date).toISOString(),
     updatedAt: (row.updated_at as Date).toISOString(),
+    currentRoute: currentRoute.rows[0]
+      ? {
+          id: currentRoute.rows[0].id,
+          reference: currentRoute.rows[0].reference,
+          status: currentRoute.rows[0].status,
+        }
+      : null,
   };
 }
 

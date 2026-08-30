@@ -54,13 +54,13 @@ export const SHIPMENT_SORT_FIELDS = [
 export type ShipmentSortField = (typeof SHIPMENT_SORT_FIELDS)[number];
 
 /**
- * Backend-controlled transitions. ASSIGNED is reserved for vehicle/driver
- * assignment in a later phase and is not used by the current booking UI.
+ * Backend-controlled transitions. ASSIGNED is set when a shipment is
+ * dispatched on a route.
  */
 export const SHIPMENT_TRANSITIONS: Record<ShipmentStatus, readonly ShipmentStatus[]> = {
   DRAFT: ['PENDING', 'CONFIRMED', 'CANCELLED'],
   PENDING: ['CONFIRMED', 'CANCELLED'],
-  CONFIRMED: ['READY_FOR_PICKUP', 'CANCELLED'],
+  CONFIRMED: ['ASSIGNED', 'READY_FOR_PICKUP', 'CANCELLED'],
   ASSIGNED: ['READY_FOR_PICKUP', 'PICKED_UP', 'CANCELLED'],
   READY_FOR_PICKUP: ['PICKED_UP', 'CANCELLED', 'DELIVERY_FAILED'],
   PICKED_UP: ['IN_TRANSIT', 'CANCELLED', 'DELIVERY_FAILED'],
@@ -330,4 +330,9 @@ export interface ShipmentPayload {
   createdByName: string | null;
   createdAt: string;
   updatedAt: string;
+  currentRoute: {
+    id: string;
+    reference: string;
+    status: string;
+  } | null;
 }
