@@ -21,9 +21,10 @@ const DELIVERABLE: ShipmentStatus[] = [
 
 export async function getProofOfDelivery(pool: Pool, actor: AuthContext, shipmentId: string) {
   await assertCanReadShipment(pool, actor, shipmentId);
-  const result = await pool.query(podSelect() + ` WHERE p.shipment_id = $1 AND p.deleted_at IS NULL`, [
-    shipmentId,
-  ]);
+  const result = await pool.query(
+    podSelect() + ` WHERE p.shipment_id = $1 AND p.deleted_at IS NULL`,
+    [shipmentId],
+  );
   if (!result.rows[0]) {
     throw notFound('Proof of delivery not found');
   }
@@ -58,7 +59,11 @@ export async function submitProofOfDelivery(
     throw conflict('Proof of delivery has already been submitted for this shipment');
   }
 
-  const assignment = await pool.query<{ route_id: string; stop_id: string | null; driver_id: string | null }>(
+  const assignment = await pool.query<{
+    route_id: string;
+    stop_id: string | null;
+    driver_id: string | null;
+  }>(
     `
       SELECT r.id AS route_id, rs_stop.id AS stop_id, r.driver_id
       FROM route_shipments rs
@@ -78,7 +83,13 @@ export async function submitProofOfDelivery(
   try {
     await client.query('BEGIN');
     const signatureId = input.signatureDataUrl
-      ? await storeAttachment(client, actor, shipment.operatorOrganizationId, input.signatureDataUrl, 'signature.png')
+      ? await storeAttachment(
+          client,
+          actor,
+          shipment.operatorOrganizationId,
+          input.signatureDataUrl,
+          'signature.png',
+        )
       : null;
     const evidenceId = input.evidenceDataUrl
       ? await storeAttachment(
@@ -133,7 +144,7 @@ export async function submitProofOfDelivery(
   }
 
   const path = deliveryPath(shipment.status);
-  let currentStatus = shipment.status;
+  let currentStatus: ShipmentStatus = shipment.status;
   for (const next of path) {
     if (!canTransitionShipment(currentStatus, next)) {
       throw new AppError(
@@ -180,7 +191,9 @@ export async function verifyProofOfDelivery(
   if (actor.role === 'DRIVER' || actor.orgType === 'CUSTOMER') {
     throw forbidden('You cannot verify proof of delivery');
   }
-  const current = await pool.query(podSelect() + ` WHERE p.id = $1 AND p.deleted_at IS NULL`, [podId]);
+  const current = await pool.query(podSelect() + ` WHERE p.id = $1 AND p.deleted_at IS NULL`, [
+    podId,
+  ]);
   if (!current.rows[0]) {
     throw notFound('Proof of delivery not found');
   }

@@ -53,9 +53,10 @@ export async function getDriverDashboard(
 
 export async function listDriverTrips(pool: Pool, actor: AuthContext): Promise<DriverTripsPayload> {
   const driver = await requireDriver(pool, actor);
-  const result = await pool.query(tripSelect() + ` WHERE r.driver_id = $1 AND r.deleted_at IS NULL ORDER BY r.updated_at DESC`, [
-    driver.id,
-  ]);
+  const result = await pool.query(
+    tripSelect() + ` WHERE r.driver_id = $1 AND r.deleted_at IS NULL ORDER BY r.updated_at DESC`,
+    [driver.id],
+  );
   const trips = result.rows.map(mapTripSummary);
   return {
     current: trips.filter((trip) => trip.bucket === 'current'),
@@ -72,7 +73,9 @@ export async function getDriverTrip(
   const driver = await requireDriver(pool, actor);
   await assertAssignedRoute(pool, driver.id, routeId);
   const route = await loadRoute(pool, actor, routeId);
-  const summary = await pool.query(tripSelect() + ` WHERE r.id = $1 AND r.deleted_at IS NULL`, [routeId]);
+  const summary = await pool.query(tripSelect() + ` WHERE r.id = $1 AND r.deleted_at IS NULL`, [
+    routeId,
+  ]);
   const trip = summary.rows[0] ? mapTripSummary(summary.rows[0]) : mapTripFromRoute(route);
 
   const stops: DriverStopSummary[] = route.stops.map((stop) => ({
@@ -88,7 +91,9 @@ export async function getDriverTrip(
     shipmentReference: stop.shipmentReference,
   }));
 
-  const shipmentIds = [...new Set(stops.map((stop) => stop.shipmentId).filter(Boolean))] as string[];
+  const shipmentIds = [
+    ...new Set(stops.map((stop) => stop.shipmentId).filter(Boolean)),
+  ] as string[];
   const shipments = shipmentIds.length
     ? await pool.query(
         `
@@ -111,21 +116,19 @@ export async function getDriverTrip(
     ...trip,
     stops,
     instructions: route.notes,
-    shipments: shipments.rows.map(
-      (row): DriverShipmentSummary => ({
-        id: String(row.id),
-        reference: String(row.reference),
-        status: String(row.status),
-        customerName: String(row.customer_name),
-        cargoDescription: (row.cargo_description as string | null) ?? null,
-        piecesCount: row.pieces_count == null ? null : Number(row.pieces_count),
-        deliveryContactName: (row.delivery_contact_name as string | null) ?? null,
-        deliveryPhone: (row.delivery_phone_e164 as string | null) ?? null,
-        deliveryAddress: (row.delivery_address as string | null) ?? null,
-        pickupAddress: (row.pickup_address as string | null) ?? null,
-        specialInstructions: (row.special_instructions as string | null) ?? null,
-      }),
-    ),
+    shipments: shipments.rows.map((row): DriverShipmentSummary => ({
+      id: String(row.id),
+      reference: String(row.reference),
+      status: String(row.status),
+      customerName: String(row.customer_name),
+      cargoDescription: (row.cargo_description as string | null) ?? null,
+      piecesCount: row.pieces_count == null ? null : Number(row.pieces_count),
+      deliveryContactName: (row.delivery_contact_name as string | null) ?? null,
+      deliveryPhone: (row.delivery_phone_e164 as string | null) ?? null,
+      deliveryAddress: (row.delivery_address as string | null) ?? null,
+      pickupAddress: (row.pickup_address as string | null) ?? null,
+      specialInstructions: (row.special_instructions as string | null) ?? null,
+    })),
   };
 }
 
@@ -182,7 +185,10 @@ export async function startDriverTrip(pool: Pool, actor: AuthContext, routeId: s
   if (route.status !== 'DISPATCHED') {
     throw unprocessable('Only a dispatched trip can be started');
   }
-  await updateRouteStatus(pool, actor, routeId, { status: 'IN_TRANSIT', note: 'Driver started trip' });
+  await updateRouteStatus(pool, actor, routeId, {
+    status: 'IN_TRANSIT',
+    note: 'Driver started trip',
+  });
   return getDriverTrip(pool, actor, routeId);
 }
 
@@ -212,17 +218,25 @@ export async function completeDriverTrip(pool: Pool, actor: AuthContext, routeId
   const driver = await requireDriver(pool, actor);
   await assertAssignedRoute(pool, driver.id, routeId);
   const trip = await getDriverTrip(pool, actor, routeId);
-  const unfinished = trip.stops.filter((stop) => stop.status !== 'SERVICED' && stop.status !== 'SKIPPED');
+  const unfinished = trip.stops.filter(
+    (stop) => stop.status !== 'SERVICED' && stop.status !== 'SKIPPED',
+  );
   if (unfinished.length > 0) {
     throw unprocessable('Complete every stop before completing the trip');
   }
   const route = await loadRoute(pool, actor, routeId);
   if (route.status === 'IN_TRANSIT') {
-    await updateRouteStatus(pool, actor, routeId, { status: 'ARRIVED', note: 'Driver arrived at final stop' });
+    await updateRouteStatus(pool, actor, routeId, {
+      status: 'ARRIVED',
+      note: 'Driver arrived at final stop',
+    });
   }
   const latest = await loadRoute(pool, actor, routeId);
   if (latest.status === 'ARRIVED') {
-    await updateRouteStatus(pool, actor, routeId, { status: 'COMPLETED', note: 'Driver completed the trip' });
+    await updateRouteStatus(pool, actor, routeId, {
+      status: 'COMPLETED',
+      note: 'Driver completed the trip',
+    });
   }
   return getDriverTrip(pool, actor, routeId);
 }

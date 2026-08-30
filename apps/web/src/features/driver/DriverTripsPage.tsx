@@ -39,7 +39,10 @@ export function DriverTripsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="My trips" description="Assigned routes only. Status changes are controlled by the server." />
+      <PageHeader
+        title="My trips"
+        description="Assigned routes only. Status changes are controlled by the server."
+      />
       {groups.map((group) => (
         <section key={group.title} className="rounded-xl border border-slate-200 bg-white p-4">
           <h2 className="text-sm font-semibold text-[#12355b]">{group.title}</h2>
@@ -58,10 +61,12 @@ export function DriverTripsPage() {
                       <StatusBadge status={trip.status} />
                     </div>
                     <p className="mt-1 text-sm text-slate-600">
-                      {trip.origin ?? 'Origin pending'} → {trip.destination ?? 'Destination pending'}
+                      {trip.origin ?? 'Origin pending'} →{' '}
+                      {trip.destination ?? 'Destination pending'}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {trip.shipmentCount} shipment{trip.shipmentCount === 1 ? '' : 's'} · {trip.stopCount} stops
+                      {trip.shipmentCount} shipment{trip.shipmentCount === 1 ? '' : 's'} ·{' '}
+                      {trip.stopCount} stops
                     </p>
                   </Link>
                 </li>

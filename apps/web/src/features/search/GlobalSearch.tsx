@@ -82,7 +82,9 @@ export function GlobalSearch() {
                     <span className="mt-0.5 block text-xs uppercase tracking-wide text-slate-400">
                       {hit.type}
                     </span>
-                    {hit.subtitle ? <span className="block text-xs text-slate-500">{hit.subtitle}</span> : null}
+                    {hit.subtitle ? (
+                      <span className="block text-xs text-slate-500">{hit.subtitle}</span>
+                    ) : null}
                   </Link>
                 </li>
               ))}

@@ -69,17 +69,14 @@ async function createDriver(
   organizationId: string,
   input: { phone: string; userId?: string },
 ) {
-  const response = await request(app)
-    .post('/api/v1/drivers')
-    .set(auth(token))
-    .send({
-      organizationId,
-      firstName: 'Jean',
-      lastName: 'Habimana',
-      phoneE164: input.phone,
-      userId: input.userId,
-      status: 'AVAILABLE',
-    });
+  const response = await request(app).post('/api/v1/drivers').set(auth(token)).send({
+    organizationId,
+    firstName: 'Jean',
+    lastName: 'Habimana',
+    phoneE164: input.phone,
+    userId: input.userId,
+    status: 'AVAILABLE',
+  });
   expect(response.status).toBe(201);
   return response.body.data as { id: string };
 }
@@ -173,8 +170,12 @@ describe('phase 11 portals and authorization', () => {
       password: 'CustomerPortal!234',
     });
     const cToken = await login(customerEmail, 'CustomerPortal!234');
-    expect((await request(app).get('/api/v1/dashboards/operations').set(auth(cToken))).status).toBe(403);
-    expect((await request(app).get('/api/v1/dashboards/finance').set(auth(cToken))).status).toBe(403);
+    expect((await request(app).get('/api/v1/dashboards/operations').set(auth(cToken))).status).toBe(
+      403,
+    );
+    expect((await request(app).get('/api/v1/dashboards/finance').set(auth(cToken))).status).toBe(
+      403,
+    );
     const customerDash = await request(app).get('/api/v1/dashboards/customer').set(auth(cToken));
     expect(customerDash.status).toBe(200);
     expect(customerDash.body.data.shipments.delivered).toEqual(expect.any(Number));
@@ -231,7 +232,7 @@ describe('phase 11 portals and authorization', () => {
     const customer = await createCustomer(admin, `Driver portal ${stamp}`);
     const shipment = await createShipment(admin, customer.id, `POD cargo ${stamp}`);
     const otherShipment = await createShipment(admin, customer.id, `Other cargo ${stamp}`);
-    const vehicle = await createVehicle(admin, organizationId, `RAD ${String(stamp).slice(-3)} P`);
+    const vehicle = await createVehicle(admin, organizationId, `RAD ${String(stamp).slice(-6)} P`);
     const driverUser = await createOrgUser({
       email: `driver.portal.${stamp}@mizigox.test`,
       password: 'Driver-Portal-2026!',
@@ -271,12 +272,12 @@ describe('phase 11 portals and authorization', () => {
     expect(dash.status).toBe(200);
     expect(dash.body.data.currentAssignment.id).toBe(route.id);
 
-    expect((await request(app).get('/api/v1/dashboards/operations').set(auth(driverToken))).status).toBe(
-      403,
-    );
-    expect((await request(app).get(`/api/v1/driver/trips/${route.id}`).set(auth(otherToken))).status).toBe(
-      403,
-    );
+    expect(
+      (await request(app).get('/api/v1/dashboards/operations').set(auth(driverToken))).status,
+    ).toBe(403);
+    expect(
+      (await request(app).get(`/api/v1/driver/trips/${route.id}`).set(auth(otherToken))).status,
+    ).toBe(403);
 
     const listed = await request(app).get('/api/v1/shipments').set(auth(driverToken));
     const listedIds = listed.body.data.map((row: { id: string }) => row.id);
@@ -321,15 +322,12 @@ describe('phase 11 portals and authorization', () => {
       expect(serviced.status).toBe(200);
     }
 
-    const pod = await request(app)
-      .post('/api/v1/pod')
-      .set(auth(driverToken))
-      .send({
-        shipmentId: shipment.id,
-        recipientName: 'Marie Uwase',
-        recipientPhone: '+250788000111',
-        notes: 'Left with reception',
-      });
+    const pod = await request(app).post('/api/v1/pod').set(auth(driverToken)).send({
+      shipmentId: shipment.id,
+      recipientName: 'Marie Uwase',
+      recipientPhone: '+250788000111',
+      notes: 'Left with reception',
+    });
     expect(pod.status).toBe(201);
     expect(pod.body.data.status).toBe('SUBMITTED');
     const delivered = await request(app).get(`/api/v1/shipments/${shipment.id}`).set(auth(admin));
@@ -361,12 +359,16 @@ describe('phase 11 portals and authorization', () => {
     });
     const customerToken = await login(`settings.${stamp}@example.com`, 'CustomerPortal!234');
 
-    expect((await request(app).get('/api/v1/admin/users').set(auth(financeToken))).status).toBe(403);
-    expect((await request(app).get('/api/v1/dashboards/finance').set(auth(financeToken))).status).toBe(
-      200,
+    expect((await request(app).get('/api/v1/admin/users').set(auth(financeToken))).status).toBe(
+      403,
     );
+    expect(
+      (await request(app).get('/api/v1/dashboards/finance').set(auth(financeToken))).status,
+    ).toBe(200);
     expect((await request(app).get('/api/v1/audit').set(auth(customerToken))).status).toBe(403);
-    expect((await request(app).get('/api/v1/admin/audit').set(auth(customerToken))).status).toBe(403);
+    expect((await request(app).get('/api/v1/admin/audit').set(auth(customerToken))).status).toBe(
+      403,
+    );
 
     const escalate = await request(app)
       .patch(`/api/v1/admin/users/${finance.userId}/role`)
@@ -430,13 +432,17 @@ describe('phase 11 portals and authorization', () => {
 
     const opsDash = await request(app).get('/api/v1/dashboards/operations').set(auth(admin));
     expect(opsDash.status).toBe(200);
-    const loadedShipment = await request(app).get(`/api/v1/shipments/${shipment.id}`).set(auth(admin));
+    const loadedShipment = await request(app)
+      .get(`/api/v1/shipments/${shipment.id}`)
+      .set(auth(admin));
     expect(loadedShipment.status).toBe(200);
     const search = await request(app)
       .get(`/api/v1/search?q=${encodeURIComponent(shipment.reference)}`)
       .set(auth(admin));
     expect(search.status).toBe(200);
-    expect(search.body.data.results.some((hit: { id: string }) => hit.id === shipment.id)).toBe(true);
+    expect(search.body.data.results.some((hit: { id: string }) => hit.id === shipment.id)).toBe(
+      true,
+    );
 
     const loadedInvoice = await request(app)
       .get(`/api/v1/invoices/${invoice.body.data.id}`)

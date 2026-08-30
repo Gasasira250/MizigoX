@@ -1,5 +1,5 @@
 import type { FinanceSummaryPayload, InvoicePayload, PaymentPayload } from './billing.js';
-import type { ContactPayload, CustomerPayload, ShipmentPayload } from './shipments.js';
+import type { CustomerPayload, ShipmentPayload } from './shipments.js';
 import type { RoutePayload, RouteStopPayload } from './routes.js';
 import type { VehicleLocationPayload } from './tracking.js';
 

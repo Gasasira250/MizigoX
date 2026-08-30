@@ -67,7 +67,9 @@ export function DriverDashboardPage() {
             {data.currentAssignment.destination ?? 'Destination pending'}
           </p>
           {data.instructions ? (
-            <p className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">{data.instructions}</p>
+            <p className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              {data.instructions}
+            </p>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
@@ -76,13 +78,19 @@ export function DriverDashboardPage() {
             >
               Open route
             </Link>
-            <Link className="rounded-md border border-slate-300 px-4 py-2.5 text-sm" to="/driver/tracking">
+            <Link
+              className="rounded-md border border-slate-300 px-4 py-2.5 text-sm"
+              to="/driver/tracking"
+            >
               Location tracking
             </Link>
           </div>
         </section>
       ) : (
-        <EmptyState title="No current assignment" detail="You do not have a dispatched trip right now." />
+        <EmptyState
+          title="No current assignment"
+          detail="You do not have a dispatched trip right now."
+        />
       )}
       {data.nextStop ? (
         <section className="rounded-xl border border-slate-200 bg-white p-5">

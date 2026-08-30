@@ -434,7 +434,7 @@ describe('fleet management', () => {
         .send({
           organizationId,
           vehicleType: type,
-          registrationNumber: `RAD ${stamp.toString().slice(-2)}${type.slice(0, 1)} Z`,
+          registrationNumber: `RAD ${stamp.toString().slice(-6)}${type.slice(0, 1)} Z`,
           make: type === 'SEDAN' ? 'Toyota' : 'Fleet',
           status: type === 'SEDAN' ? 'AVAILABLE' : 'ACTIVE',
         });

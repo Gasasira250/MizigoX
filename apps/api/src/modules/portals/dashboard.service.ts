@@ -345,7 +345,10 @@ export async function getCustomerDashboard(
   );
 
   let outstanding: CustomerDashboardPayload['outstandingInvoices'] = null;
-  if (actor.permissions.includes('invoices.read') || actor.permissions.includes('invoices.manage')) {
+  if (
+    actor.permissions.includes('invoices.read') ||
+    actor.permissions.includes('invoices.manage')
+  ) {
     const invoices = await pool.query(
       `
         SELECT

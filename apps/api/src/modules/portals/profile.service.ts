@@ -1,13 +1,14 @@
-import type { DisplayPreferences, OrganizationSettingsPayload, UserProfilePayload } from '@mizigox/shared';
+import type {
+  DisplayPreferences,
+  OrganizationSettingsPayload,
+  UserProfilePayload,
+} from '@mizigox/shared';
 import type { Pool } from 'pg';
 import { writeAudit } from '../../lib/audit.js';
 import { conflict, forbidden, notFound } from '../../lib/errors.js';
 import type { AuthContext } from '../auth/auth.types.js';
 import type { z } from 'zod';
-import type {
-  updateOrganizationSettingsSchema,
-  updateProfileSchema,
-} from './portals.schemas.js';
+import type { updateOrganizationSettingsSchema, updateProfileSchema } from './portals.schemas.js';
 
 type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 type UpdateOrgInput = z.infer<typeof updateOrganizationSettingsSchema>;
@@ -124,7 +125,8 @@ export async function updateOrganizationSettings(
   const current = await getOrganizationSettings(pool, actor, organizationId);
   const nextSettings = {
     ...(current.settings ?? {}),
-    timezone: input.timezone ?? (current.settings.timezone as string | undefined) ?? current.timezone,
+    timezone:
+      input.timezone ?? (current.settings.timezone as string | undefined) ?? current.timezone,
     address: input.address === undefined ? current.address : input.address,
     logoStorageKey:
       input.logoStorageKey === undefined ? current.logoStorageKey : input.logoStorageKey,
@@ -230,8 +232,7 @@ function mapOrganization(row: Record<string, unknown>): OrganizationSettingsPayl
     timezone: typeof settings.timezone === 'string' ? settings.timezone : 'Africa/Kigali',
     address: typeof settings.address === 'string' ? settings.address : null,
     logoStorageKey: typeof settings.logoStorageKey === 'string' ? settings.logoStorageKey : null,
-    businessDetails:
-      typeof settings.businessDetails === 'string' ? settings.businessDetails : null,
+    businessDetails: typeof settings.businessDetails === 'string' ? settings.businessDetails : null,
     settings,
     createdAt: new Date(row.created_at as string).toISOString(),
     updatedAt: new Date(row.updated_at as string).toISOString(),
@@ -240,6 +241,9 @@ function mapOrganization(row: Record<string, unknown>): OrganizationSettingsPayl
 
 function isUniqueViolation(error: unknown) {
   return Boolean(
-    error && typeof error === 'object' && 'code' in error && (error as { code: string }).code === '23505',
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code: string }).code === '23505',
   );
 }

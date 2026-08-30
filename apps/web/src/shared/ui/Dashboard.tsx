@@ -15,10 +15,14 @@ export function PageHeader({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div>
         {eyebrow ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">{eyebrow}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
+            {eyebrow}
+          </p>
         ) : null}
         <h1 className="mt-1 text-2xl font-semibold text-[#12355b]">{title}</h1>
-        {description ? <p className="mt-2 max-w-2xl text-sm text-slate-600">{description}</p> : null}
+        {description ? (
+          <p className="mt-2 max-w-2xl text-sm text-slate-600">{description}</p>
+        ) : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
@@ -194,7 +198,10 @@ export function QuickActions({
 
 export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500" role="status">
+    <div
+      className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500"
+      role="status"
+    >
       {label}
     </div>
   );
@@ -209,15 +216,12 @@ export function EmptyState({ title, detail }: { title: string; detail?: string }
   );
 }
 
-export function ErrorState({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry?: () => void;
-}) {
+export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+    <div
+      className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+      role="alert"
+    >
       <p>{message}</p>
       {onRetry ? (
         <button
@@ -233,5 +237,7 @@ export function ErrorState({
 }
 
 export function ResponsiveTable({ children }: { children: React.ReactNode }) {
-  return <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">{children}</div>;
+  return (
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">{children}</div>
+  );
 }

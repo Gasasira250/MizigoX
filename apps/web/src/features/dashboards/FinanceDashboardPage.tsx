@@ -58,8 +58,16 @@ export function FinanceDashboardPage() {
       />
       <QuickActions
         actions={[
-          { label: 'New invoice', href: '/admin/invoices/new', hidden: !canCreateInvoices(user?.permissions) },
-          { label: 'Record payment', href: '/admin/payments/new', hidden: !canCreatePayments(user?.permissions) },
+          {
+            label: 'New invoice',
+            href: '/admin/invoices/new',
+            hidden: !canCreateInvoices(user?.permissions),
+          },
+          {
+            label: 'Record payment',
+            href: '/admin/payments/new',
+            hidden: !canCreatePayments(user?.permissions),
+          },
           { label: 'Customers', href: '/admin/customers' },
         ]}
       />
@@ -69,7 +77,11 @@ export function FinanceDashboardPage() {
           value={formatMoney(summary.totalRevenue, summary.currencyCode)}
           href="/admin/invoices"
         />
-        <MetricCard label="Total paid" value={formatMoney(summary.amountPaid, summary.currencyCode)} href="/admin/payments" />
+        <MetricCard
+          label="Total paid"
+          value={formatMoney(summary.amountPaid, summary.currencyCode)}
+          href="/admin/payments"
+        />
         <MetricCard
           label="Outstanding"
           value={formatMoney(summary.amountDue, summary.currencyCode)}
@@ -90,8 +102,14 @@ export function FinanceDashboardPage() {
           ) : (
             <ul className="mt-3 divide-y divide-slate-100">
               {data.recentInvoices.map((invoice) => (
-                <li key={invoice.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/invoices/${invoice.id}`}>
+                <li
+                  key={invoice.id}
+                  className="flex items-center justify-between gap-3 py-2 text-sm"
+                >
+                  <Link
+                    className="font-medium text-[#12355b] hover:underline"
+                    to={`/admin/invoices/${invoice.id}`}
+                  >
                     {invoice.number}
                   </Link>
                   <StatusBadge status={invoice.status} />
@@ -107,8 +125,14 @@ export function FinanceDashboardPage() {
           ) : (
             <ul className="mt-3 divide-y divide-slate-100">
               {data.recentPayments.map((payment) => (
-                <li key={payment.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/payments/${payment.id}`}>
+                <li
+                  key={payment.id}
+                  className="flex items-center justify-between gap-3 py-2 text-sm"
+                >
+                  <Link
+                    className="font-medium text-[#12355b] hover:underline"
+                    to={`/admin/payments/${payment.id}`}
+                  >
                     {payment.reference}
                   </Link>
                   <StatusBadge status={payment.status} />

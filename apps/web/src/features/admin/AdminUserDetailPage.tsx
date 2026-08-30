@@ -36,6 +36,7 @@ export function AdminUserDetailPage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   if (error && !record) return <ErrorState message={error} onRetry={() => void load()} />;
@@ -66,7 +67,9 @@ export function AdminUserDetailPage() {
                   void apiPatch<AdminUserPayload>(`/admin/users/${record.id}`, { status })
                     .then(setRecord)
                     .then(() => notify('User status updated'))
-                    .catch((cause) => notify(formatAppError(cause, 'Unable to update user'), 'error'));
+                    .catch((cause) =>
+                      notify(formatAppError(cause, 'Unable to update user'), 'error'),
+                    );
                 }}
               >
                 {status}

@@ -13,7 +13,9 @@ export function DriverTrackingPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
-  const [permission, setPermission] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>('unknown');
+  const [permission, setPermission] = useState<'unknown' | 'granted' | 'denied' | 'prompt'>(
+    'unknown',
+  );
   const [watching, setWatching] = useState(false);
   const watchId = useRef<number | null>(null);
 
@@ -146,7 +148,9 @@ export function DriverTrackingPage() {
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-slate-500">Tracking status</dt>
-          <dd className="mt-1 font-medium">{watching ? 'Sending while this page is open' : 'Stopped'}</dd>
+          <dd className="mt-1 font-medium">
+            {watching ? 'Sending while this page is open' : 'Stopped'}
+          </dd>
         </div>
       </dl>
       {error ? <p className="text-sm text-red-700">{error}</p> : null}

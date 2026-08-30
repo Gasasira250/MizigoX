@@ -19,7 +19,10 @@ export function CustomerProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={customer.name} description="Company information for your customer account." />
+      <PageHeader
+        title={customer.name}
+        description="Company information for your customer account."
+      />
       <section className="rounded-xl border border-slate-200 bg-white p-4 text-sm">
         <p>Legal name: {customer.legalName ?? '—'}</p>
         <p>Email: {customer.email ?? '—'}</p>

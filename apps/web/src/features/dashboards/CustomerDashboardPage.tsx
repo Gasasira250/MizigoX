@@ -51,19 +51,34 @@ export function CustomerDashboardPage() {
       />
       <QuickActions
         actions={[
-          { label: 'New shipment', href: '/portal/shipments/new', hidden: !canCreateShipments(user?.permissions) },
+          {
+            label: 'New shipment',
+            href: '/portal/shipments/new',
+            hidden: !canCreateShipments(user?.permissions),
+          },
           { label: 'Shipments', href: '/portal/shipments' },
-          { label: 'Invoices', href: '/portal/invoices', hidden: !canReadInvoices(user?.permissions) },
+          {
+            label: 'Invoices',
+            href: '/portal/invoices',
+            hidden: !canReadInvoices(user?.permissions),
+          },
         ]}
       />
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Active shipments" value={data.shipments.active} href="/portal/shipments" />
+        <MetricCard
+          label="Active shipments"
+          value={data.shipments.active}
+          href="/portal/shipments"
+        />
         <MetricCard label="Pending shipments" value={data.shipments.pending} />
         <MetricCard label="Delivered" value={data.shipments.delivered} />
         {data.outstandingInvoices ? (
           <MetricCard
             label="Outstanding invoices"
-            value={formatMoney(data.outstandingInvoices.amountDue, data.outstandingInvoices.currencyCode)}
+            value={formatMoney(
+              data.outstandingInvoices.amountDue,
+              data.outstandingInvoices.currencyCode,
+            )}
             detail={`${data.outstandingInvoices.count} open`}
             href="/portal/invoices"
           />
@@ -76,8 +91,14 @@ export function CustomerDashboardPage() {
         ) : (
           <ul className="mt-3 divide-y divide-slate-100">
             {data.recentShipments.map((shipment) => (
-              <li key={shipment.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                <Link className="font-medium text-[#12355b] hover:underline" to={`/portal/shipments/${shipment.id}`}>
+              <li
+                key={shipment.id}
+                className="flex items-center justify-between gap-3 py-2 text-sm"
+              >
+                <Link
+                  className="font-medium text-[#12355b] hover:underline"
+                  to={`/portal/shipments/${shipment.id}`}
+                >
                   {shipment.reference}
                 </Link>
                 <StatusBadge status={shipment.status} />
@@ -86,7 +107,11 @@ export function CustomerDashboardPage() {
           </ul>
         )}
       </section>
-      <RecentActivity title="Recent activity" empty="No recent activity." items={data.recentActivity} />
+      <RecentActivity
+        title="Recent activity"
+        empty="No recent activity."
+        items={data.recentActivity}
+      />
     </div>
   );
 }

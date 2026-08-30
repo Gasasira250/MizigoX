@@ -31,6 +31,7 @@ export function DriverRoutePage() {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeId]);
 
   async function run(path: string, success: string) {
@@ -66,7 +67,9 @@ export function DriverRoutePage() {
         actions={<StatusBadge status={trip.status} />}
       />
       {trip.instructions ? (
-        <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">{trip.instructions}</p>
+        <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+          {trip.instructions}
+        </p>
       ) : null}
       <div className="flex flex-col gap-2 sm:flex-row">
         {canAccept ? (

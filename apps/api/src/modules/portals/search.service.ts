@@ -72,7 +72,10 @@ function hrefFor(actor: AuthContext, type: SearchResourceType, id: string) {
 }
 
 async function searchShipments(pool: Pool, actor: AuthContext, pattern: string) {
-  const where = ['s.deleted_at IS NULL', `(lower(s.reference) LIKE $1 ESCAPE '\\' OR lower(c.name) LIKE $1 ESCAPE '\\')`];
+  const where = [
+    's.deleted_at IS NULL',
+    `(lower(s.reference) LIKE $1 ESCAPE '\\' OR lower(c.name) LIKE $1 ESCAPE '\\')`,
+  ];
   const params: unknown[] = [pattern];
   if (actor.orgType === 'OPERATOR') {
     params.push(actor.orgId);
