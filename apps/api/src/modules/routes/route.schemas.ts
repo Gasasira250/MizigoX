@@ -82,9 +82,7 @@ export const updateRouteSchema = z
     plannedDepartureAt: z.union([dateTimeRequired, z.null()]).optional(),
     plannedArrivalAt: z.union([dateTimeRequired, z.null()]).optional(),
     distanceKm: z.union([z.number().min(0).max(100_000), z.null()]).optional(),
-    estimatedDurationMinutes: z
-      .union([z.number().int().min(0).max(100_000), z.null()])
-      .optional(),
+    estimatedDurationMinutes: z.union([z.number().int().min(0).max(100_000), z.null()]).optional(),
     notes: z.union([z.string().trim().max(2000), z.null()]).optional(),
   })
   .refine(

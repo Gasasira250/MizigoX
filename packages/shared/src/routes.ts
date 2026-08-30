@@ -149,7 +149,13 @@ export function canViewRouteHistory(granted: readonly string[] | undefined) {
 }
 
 export function canReadDispatch(granted: readonly string[] | undefined) {
-  return hasAnyPermission(granted, 'dispatch.manage', 'dispatch.read', 'routes.manage', 'routes.read');
+  return hasAnyPermission(
+    granted,
+    'dispatch.manage',
+    'dispatch.read',
+    'routes.manage',
+    'routes.read',
+  );
 }
 
 export function canManageDispatch(granted: readonly string[] | undefined) {

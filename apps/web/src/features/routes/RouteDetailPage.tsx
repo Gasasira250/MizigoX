@@ -79,7 +79,9 @@ export function RouteDetailPage() {
       setRoute(loaded);
       setError(null);
       if (loaded.status === 'READY' && canDispatch) {
-        const check = await apiGet<DispatchValidationPayload>(`/routes/${loaded.id}/dispatch-check`);
+        const check = await apiGet<DispatchValidationPayload>(
+          `/routes/${loaded.id}/dispatch-check`,
+        );
         setValidation(check);
       } else {
         setValidation(null);
@@ -119,7 +121,9 @@ export function RouteDetailPage() {
         notify(`${route.reference} was archived.`);
         navigate('/admin/routes');
       } else if (confirm.type === 'removeStop') {
-        const updated = await apiDelete<RoutePayload>(`/routes/${route.id}/stops/${confirm.stopId}`);
+        const updated = await apiDelete<RoutePayload>(
+          `/routes/${route.id}/stops/${confirm.stopId}`,
+        );
         setRoute(updated);
         notify('Stop removed.');
       } else {
@@ -193,7 +197,13 @@ export function RouteDetailPage() {
     if (index < 0 || swap < 0 || swap >= ids.length) {
       return;
     }
-    [ids[index], ids[swap]] = [ids[swap], ids[index]];
+    const currentId = ids[index];
+    const swapId = ids[swap];
+    if (!currentId || !swapId) {
+      return;
+    }
+    ids[index] = swapId;
+    ids[swap] = currentId;
     try {
       setRoute(await apiPost<RoutePayload>(`/routes/${route.id}/stops/reorder`, { stopIds: ids }));
     } catch (cause) {
@@ -206,9 +216,7 @@ export function RouteDetailPage() {
       return;
     }
     try {
-      setRoute(
-        await apiPatch<RoutePayload>(`/routes/${route.id}/stops/${stop.id}`, { status }),
-      );
+      setRoute(await apiPatch<RoutePayload>(`/routes/${route.id}/stops/${stop.id}`, { status }));
     } catch (cause) {
       notify(formatApiError(cause, 'Unable to update stop'), 'error');
     }
@@ -303,7 +311,10 @@ export function RouteDetailPage() {
         <OverviewCard label="Type" value={routeTypeLabel(route.routeType)} />
         <OverviewCard label="Planned departure" value={formatDate(route.plannedDepartureAt)} />
         <OverviewCard label="Planned arrival" value={formatDate(route.plannedArrivalAt)} />
-        <OverviewCard label="Distance" value={route.distanceKm != null ? `${route.distanceKm} km` : '—'} />
+        <OverviewCard
+          label="Distance"
+          value={route.distanceKm != null ? `${route.distanceKm} km` : '—'}
+        />
         <OverviewCard label="Duration" value={formatDuration(route.estimatedDurationMinutes)} />
         <OverviewCard label="Actual departure" value={formatDate(route.actualDepartureAt)} />
         <OverviewCard label="Actual arrival" value={formatDate(route.actualArrivalAt)} />
@@ -409,7 +420,11 @@ export function RouteDetailPage() {
                   {(['PENDING', 'ARRIVED', 'SERVICED', 'SKIPPED'] as const)
                     .filter((status) => status !== stop.status)
                     .map((status) => (
-                      <button key={status} type="button" onClick={() => void updateStopStatus(stop, status)}>
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => void updateStopStatus(stop, status)}
+                      >
                         Mark {status.toLowerCase()}
                       </button>
                     ))}
@@ -511,7 +526,9 @@ export function RouteDetailPage() {
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-[#12355b]">Timeline</h2>
         {!canHistory ? (
-          <p className="mt-3 text-sm text-slate-500">You do not have permission to view route history.</p>
+          <p className="mt-3 text-sm text-slate-500">
+            You do not have permission to view route history.
+          </p>
         ) : route.events.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">No events recorded yet.</p>
         ) : (
@@ -521,7 +538,7 @@ export function RouteDetailPage() {
                 <p className="text-sm font-medium text-slate-900">
                   {event.previousStatus && event.status
                     ? `${routeStatusLabel(event.previousStatus)} → ${routeStatusLabel(event.status)}`
-                    : event.description ?? event.type.replaceAll('_', ' ')}
+                    : (event.description ?? event.type.replaceAll('_', ' '))}
                 </p>
                 <p className="text-xs text-slate-500">
                   {event.type.replaceAll('_', ' ')} · {formatDate(event.occurredAt)}
@@ -537,7 +554,9 @@ export function RouteDetailPage() {
         <ConfirmDialog
           title={confirmTitle(confirm)}
           message={confirmMessage(confirm, route)}
-          confirmLabel={confirm.type === 'cancel' || confirm.type === 'archive' ? 'Confirm' : 'Continue'}
+          confirmLabel={
+            confirm.type === 'cancel' || confirm.type === 'archive' ? 'Confirm' : 'Continue'
+          }
           danger={confirm.type === 'cancel' || confirm.type === 'archive'}
           onCancel={() => (busy ? undefined : setConfirm(null))}
           onConfirm={() => {

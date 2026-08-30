@@ -5,7 +5,7 @@ import type {
   RouteType,
   ShipmentPayload,
 } from '@mizigox/shared';
-import { isRouteStructurallyLocked, routeStopTypeLabel, weightToKg } from '@mizigox/shared';
+import { isRouteStructurallyLocked, weightToKg } from '@mizigox/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { apiGet, apiGetWithMeta, apiPatch, apiPost } from '../../shared/api/client';
@@ -144,7 +144,8 @@ export function RouteFormPage() {
       ? [
           {
             id: route.vehicleId,
-            registrationNumber: route.vehicleRegistration ?? route.vehicleReference ?? 'Assigned vehicle',
+            registrationNumber:
+              route.vehicleRegistration ?? route.vehicleReference ?? 'Assigned vehicle',
             vehicleTypeName: 'Current assignment',
             payloadCapacity: route.vehicleCapacityKg,
             payloadUnit: 'KG',
@@ -188,7 +189,13 @@ export function RouteFormPage() {
     if (swap < 0 || swap >= next.length) {
       return;
     }
-    [next[index], next[swap]] = [next[swap], next[index]];
+    const current = next[index];
+    const other = next[swap];
+    if (!current || !other) {
+      return;
+    }
+    next[index] = other;
+    next[swap] = current;
     setStops(next);
   }
 
@@ -265,7 +272,8 @@ export function RouteFormPage() {
           {editing ? `Edit ${route?.reference ?? 'route'}` : 'Create route'}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Select shipments, confirm stops, then assign an available vehicle and driver before saving.
+          Select shipments, confirm stops, then assign an available vehicle and driver before
+          saving.
         </p>
       </div>
 
@@ -284,7 +292,9 @@ export function RouteFormPage() {
         </ol>
       ) : null}
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
       {locked ? (
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
           This route is dispatched. Structural changes are locked.
@@ -295,18 +305,16 @@ export function RouteFormPage() {
       ) : null}
 
       {!editing && step === 0 ? (
-        <ShipmentPicker
-          board={board}
-          selectedIds={selectedIds}
-          onToggle={toggleShipment}
-        />
+        <ShipmentPicker board={board} selectedIds={selectedIds} onToggle={toggleShipment} />
       ) : null}
 
       {(!editing && step === 1) || editing ? (
         <section className="rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-sm font-semibold text-[#12355b]">Pickup and delivery</h2>
-          {(editing ? route?.shipments.map((item) => item.reference) : selectedShipments.map((item) => item.reference))
-            .length === 0 ? (
+          {(editing
+            ? (route?.shipments ?? []).map((item) => item.reference)
+            : selectedShipments.map((item) => item.reference)
+          ).length === 0 ? (
             <p className="mt-3 text-sm text-slate-500">Select at least one shipment.</p>
           ) : (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -315,7 +323,10 @@ export function RouteFormPage() {
                   <p className="font-medium text-slate-900">{shipment.reference}</p>
                   <p className="text-sm text-slate-500">{shipment.customerName}</p>
                   <p className="mt-2 text-sm text-slate-700">
-                    Pickup: {shipment.pickup.address?.formattedAddress ?? shipment.origin?.formattedAddress ?? '—'}
+                    Pickup:{' '}
+                    {shipment.pickup.address?.formattedAddress ??
+                      shipment.origin?.formattedAddress ??
+                      '—'}
                   </p>
                   <p className="text-sm text-slate-700">
                     Delivery:{' '}
@@ -354,7 +365,10 @@ export function RouteFormPage() {
           </div>
           <ol className="mt-4 space-y-3">
             {stops.map((stop, index) => (
-              <li key={stop.key} className="grid gap-2 rounded-lg border border-slate-100 p-3 md:grid-cols-6">
+              <li
+                key={stop.key}
+                className="grid gap-2 rounded-lg border border-slate-100 p-3 md:grid-cols-6"
+              >
                 <select
                   className="rounded-md border border-slate-300 px-2 py-2 text-sm"
                   value={stop.stopType}
@@ -477,7 +491,9 @@ export function RouteFormPage() {
             })}
           </div>
           {!vehicleChoices.length ? (
-            <p className="mt-3 text-sm text-slate-500">No available vehicles in this organization.</p>
+            <p className="mt-3 text-sm text-slate-500">
+              No available vehicles in this organization.
+            </p>
           ) : null}
         </section>
       ) : null}
@@ -509,7 +525,9 @@ export function RouteFormPage() {
             ))}
           </div>
           {!driverChoices.length ? (
-            <p className="mt-3 text-sm text-slate-500">No available drivers in this organization.</p>
+            <p className="mt-3 text-sm text-slate-500">
+              No available drivers in this organization.
+            </p>
           ) : null}
         </section>
       ) : null}
@@ -574,14 +592,19 @@ export function RouteFormPage() {
           </label>
           <div className="md:col-span-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-700">
             <p>Cargo: {formatKg(cargoWeightKg)}</p>
-            <p>Vehicle: {selectedVehicle?.registrationNumber ?? route?.vehicleRegistration ?? 'None'}</p>
+            <p>
+              Vehicle: {selectedVehicle?.registrationNumber ?? route?.vehicleRegistration ?? 'None'}
+            </p>
             <p>
               Driver:{' '}
               {selectedDriver
                 ? `${selectedDriver.firstName} ${selectedDriver.lastName}`
                 : (route?.driverName ?? 'None')}
             </p>
-            <p>Planned departure: {plannedDepartureAt ? formatDate(toIsoDateTime(plannedDepartureAt) ?? null) : '—'}</p>
+            <p>
+              Planned departure:{' '}
+              {plannedDepartureAt ? formatDate(toIsoDateTime(plannedDepartureAt) ?? null) : '—'}
+            </p>
           </div>
         </section>
       ) : null}
@@ -710,7 +733,8 @@ function ShipmentPicker({
                   <span>
                     <span className="font-medium text-slate-900">{shipment.reference}</span>
                     <span className="block text-slate-500">
-                      {shipment.customerName} · {shipment.origin ?? '—'} → {shipment.destination ?? '—'}
+                      {shipment.customerName} · {shipment.origin ?? '—'} →{' '}
+                      {shipment.destination ?? '—'}
                     </span>
                   </span>
                   <StatusBadge status={shipment.status} />

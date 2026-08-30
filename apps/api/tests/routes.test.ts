@@ -344,9 +344,7 @@ describe('route management and dispatch', () => {
     expect(added.status).toBe(201);
     expect(added.body.data.shipments).toHaveLength(2);
 
-    const listed = await request(app)
-      .get(`/api/v1/routes/${route.id}/shipments`)
-      .set(auth(admin));
+    const listed = await request(app).get(`/api/v1/routes/${route.id}/shipments`).set(auth(admin));
     expect(listed.status).toBe(200);
     expect(listed.body.data).toHaveLength(2);
 
@@ -380,8 +378,14 @@ describe('route management and dispatch', () => {
     const organizationId = await defaultOperatorId();
     const stamp = Date.now();
     const customer = await createCustomer(admin, `Fleet val ${stamp}`);
-    const heavy = await createShipment(admin, customer.id, { cargo: `Heavy ${stamp}`, weightKg: 500 });
-    const light = await createShipment(admin, customer.id, { cargo: `Light ${stamp}`, weightKg: 80 });
+    const heavy = await createShipment(admin, customer.id, {
+      cargo: `Heavy ${stamp}`,
+      weightKg: 500,
+    });
+    const light = await createShipment(admin, customer.id, {
+      cargo: `Light ${stamp}`,
+      weightKg: 80,
+    });
     const smallVehicle = await createVehicle(admin, organizationId, {
       plate: `RAC ${String(stamp).slice(-3)} D`,
       payload: 100,
@@ -469,7 +473,10 @@ describe('route management and dispatch', () => {
     const organizationId = await defaultOperatorId();
     const stamp = Date.now();
     const customer = await createCustomer(admin, `Dispatch ${stamp}`);
-    const shipment = await createShipment(admin, customer.id, { cargo: `Dispatch ${stamp}`, weightKg: 200 });
+    const shipment = await createShipment(admin, customer.id, {
+      cargo: `Dispatch ${stamp}`,
+      weightKg: 200,
+    });
     const vehicle = await createVehicle(admin, organizationId, {
       plate: `RAF ${String(stamp).slice(-3)} G`,
       payload: 2000,
@@ -622,9 +629,9 @@ describe('route management and dispatch', () => {
       .get(`/api/v1/shipments/${shipment.id}`)
       .set(auth(admin));
     expect(shipmentStill.body.data.status).toBe('CONFIRMED');
-    expect(stillReady.body.data.events.some((event: { type: string }) => event.type === 'DISPATCHED')).toBe(
-      false,
-    );
+    expect(
+      stillReady.body.data.events.some((event: { type: string }) => event.type === 'DISPATCHED'),
+    ).toBe(false);
   });
 
   it('prevents conflicting vehicle and driver assignment on committed routes', async () => {
@@ -703,10 +710,12 @@ describe('route management and dispatch', () => {
       .get(`/api/v1/routes?status=DRAFT&vehicleId=${vehicle.id}&driverId=${driver.id}`)
       .set(auth(admin));
     expect(filtered.status).toBe(200);
-    expect(filtered.body.data.every((row: { status: string }) => row.status === 'DRAFT')).toBe(true);
-    expect(filtered.body.data.every((row: { vehicleId: string }) => row.vehicleId === vehicle.id)).toBe(
+    expect(filtered.body.data.every((row: { status: string }) => row.status === 'DRAFT')).toBe(
       true,
     );
+    expect(
+      filtered.body.data.every((row: { vehicleId: string }) => row.vehicleId === vehicle.id),
+    ).toBe(true);
 
     const board = await request(app).get('/api/v1/dispatch/board').set(auth(admin));
     expect(board.status).toBe(200);
@@ -766,9 +775,7 @@ describe('route management and dispatch', () => {
       organizationId: otherOperator.id,
     });
     const otherToken = await login(`south.admin.${stamp}@example.com`, password);
-    const leaked = await request(app)
-      .get(`/api/v1/routes/${route.id}`)
-      .set(auth(otherToken));
+    const leaked = await request(app).get(`/api/v1/routes/${route.id}`).set(auth(otherToken));
     expect(leaked.status).toBe(403);
     const leakedStop = await request(app)
       .post(`/api/v1/routes/${route.id}/stops`)
@@ -822,9 +829,7 @@ describe('route management and dispatch', () => {
       .post(`/api/v1/routes/${id}/shipments`)
       .set(auth(admin))
       .send({ shipmentId: extra.id });
-    await request(app)
-      .delete(`/api/v1/routes/${id}/shipments/${extra.id}`)
-      .set(auth(admin));
+    await request(app).delete(`/api/v1/routes/${id}/shipments/${extra.id}`).set(auth(admin));
     const stop = await request(app)
       .post(`/api/v1/routes/${id}/stops`)
       .set(auth(admin))

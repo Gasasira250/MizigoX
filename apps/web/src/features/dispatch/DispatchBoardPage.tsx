@@ -1,4 +1,8 @@
-import type { DispatchBoardPayload, DispatchValidationPayload, RoutePayload } from '@mizigox/shared';
+import type {
+  DispatchBoardPayload,
+  DispatchValidationPayload,
+  RoutePayload,
+} from '@mizigox/shared';
 import { canCreateRoutes, canDispatchRoutes, canManageDispatch } from '@mizigox/shared';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -88,7 +92,9 @@ export function DispatchBoardPage() {
 
   async function openDispatch(route: RoutePayload) {
     try {
-      const check = await apiGet<DispatchValidationPayload>(`/dispatch/routes/${route.id}/validate`);
+      const check = await apiGet<DispatchValidationPayload>(
+        `/dispatch/routes/${route.id}/validate`,
+      );
       if (!check.ok) {
         notify(check.errors[0] ?? 'Route is not ready for dispatch', 'error');
         return;
@@ -187,7 +193,10 @@ export function DispatchBoardPage() {
           {board.plannedRoutes.map((route) => (
             <article key={route.id} className="rounded-lg border border-slate-100 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link className="font-medium text-[#12355b] hover:underline" to={`/admin/routes/${route.id}`}>
+                <Link
+                  className="font-medium text-[#12355b] hover:underline"
+                  to={`/admin/routes/${route.id}`}
+                >
                   {route.reference}
                 </Link>
                 <StatusBadge status={route.status} />
@@ -280,7 +289,8 @@ export function DispatchBoardPage() {
                 <StatusBadge status={vehicle.status} />
               </div>
               <p className="text-slate-500">
-                {vehicle.vehicleTypeName} · {formatKg(vehicle.payloadCapacity)} {vehicle.payloadUnit}
+                {vehicle.vehicleTypeName} · {formatKg(vehicle.payloadCapacity)}{' '}
+                {vehicle.payloadUnit}
               </p>
             </article>
           ))}

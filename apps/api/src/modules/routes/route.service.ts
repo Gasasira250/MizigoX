@@ -200,7 +200,11 @@ export async function listRoutes(pool: Pool, actor: AuthContext, query: ListRout
   };
 }
 
-export async function loadRoute(pool: Pool, actor: AuthContext, routeId: string): Promise<RoutePayload> {
+export async function loadRoute(
+  pool: Pool,
+  actor: AuthContext,
+  routeId: string,
+): Promise<RoutePayload> {
   const result = await pool.query(
     `
       SELECT
@@ -315,9 +319,7 @@ export async function loadRoute(pool: Pool, actor: AuthContext, routeId: string)
     driverId: (row.driver_id as string | null) ?? null,
     driverReference: (row.driver_reference as string | null) ?? null,
     driverName:
-      row.first_name && row.last_name
-        ? `${String(row.first_name)} ${String(row.last_name)}`
-        : null,
+      row.first_name && row.last_name ? `${String(row.first_name)} ${String(row.last_name)}` : null,
     driverPhone: (row.phone_e164 as string | null) ?? null,
     driverStatus: (row.driver_status as string | null) ?? null,
     shipmentCount: mappedShipments.length,
@@ -343,7 +345,10 @@ export async function updateRoute(
   if (actor.orgType === 'CUSTOMER') {
     throw forbidden('Customer accounts cannot update routes');
   }
-  if (isRouteStructurallyLocked(current.status) && (input.vehicleId !== undefined || input.driverId !== undefined)) {
+  if (
+    isRouteStructurallyLocked(current.status) &&
+    (input.vehicleId !== undefined || input.driverId !== undefined)
+  ) {
     throw unprocessable('Vehicle and driver cannot be changed after dispatch');
   }
 
@@ -351,7 +356,13 @@ export async function updateRoute(
   try {
     await client.query('BEGIN');
     if (input.vehicleId) {
-      await assertVehicleAssignable(client, current.organizationId, input.vehicleId, routeId, false);
+      await assertVehicleAssignable(
+        client,
+        current.organizationId,
+        input.vehicleId,
+        routeId,
+        false,
+      );
     }
     if (input.driverId) {
       await assertDriverAssignable(client, current.organizationId, input.driverId, routeId, false);
@@ -551,7 +562,10 @@ export async function dispatchRoute(
     const current = await loadRoute(pool, actor, routeId);
     const validation = await buildDispatchValidation(pool, current, client);
     if (!validation.ok) {
-      throw unprocessable(validation.errors[0] ?? 'Route is not ready for dispatch', validation.errors);
+      throw unprocessable(
+        validation.errors[0] ?? 'Route is not ready for dispatch',
+        validation.errors,
+      );
     }
     if (!canTransitionRoute(current.status, 'DISPATCHED')) {
       throw new AppError(
@@ -658,7 +672,13 @@ export async function addRouteShipment(
       [routeId, shipmentId, current.organizationId],
     );
     const existingStops = current.stops.length;
-    await seedStopsFromShipments(client, current.organizationId, routeId, [shipmentId], existingStops);
+    await seedStopsFromShipments(
+      client,
+      current.organizationId,
+      routeId,
+      [shipmentId],
+      existingStops,
+    );
     await refreshRouteEndpoints(client, routeId);
     await insertRouteEvent(client, {
       routeId,
@@ -789,7 +809,10 @@ export async function updateRouteStop(
   if (!existing) {
     throw notFound('Stop not found');
   }
-  if (isRouteStructurallyLocked(current.status) && (input.stopType || input.formattedAddress || input.addressId)) {
+  if (
+    isRouteStructurallyLocked(current.status) &&
+    (input.stopType || input.formattedAddress || input.addressId)
+  ) {
     throw unprocessable('Stop structure cannot be changed after dispatch');
   }
   await pool.query(
@@ -849,7 +872,12 @@ export async function updateRouteStop(
   return loadRoute(pool, actor, routeId);
 }
 
-export async function removeRouteStop(pool: Pool, actor: AuthContext, routeId: string, stopId: string) {
+export async function removeRouteStop(
+  pool: Pool,
+  actor: AuthContext,
+  routeId: string,
+  stopId: string,
+) {
   const current = await loadRoute(pool, actor, routeId);
   if (actor.orgType === 'CUSTOMER') {
     throw forbidden('Customer accounts cannot manage stops');
@@ -1218,7 +1246,11 @@ async function restoreFleet(client: PoolClient, route: RoutePayload) {
   }
 }
 
-async function previousFleetStatus(client: PoolClient, routeId: string, kind: 'vehicle' | 'driver') {
+async function previousFleetStatus(
+  client: PoolClient,
+  routeId: string,
+  kind: 'vehicle' | 'driver',
+) {
   const column = kind === 'vehicle' ? 'previous_vehicle_status' : 'previous_driver_status';
   const result = await client.query<{ value: string | null }>(
     `SELECT ${column} AS value FROM routes WHERE id = $1`,
@@ -1280,10 +1312,9 @@ async function assertVehicleAssignable(
     organization_id: string;
     status: VehicleStatus;
     deleted_at: Date | null;
-  }>(
-    `SELECT organization_id, status::text AS status, deleted_at FROM vehicles WHERE id = $1`,
-    [vehicleId],
-  );
+  }>(`SELECT organization_id, status::text AS status, deleted_at FROM vehicles WHERE id = $1`, [
+    vehicleId,
+  ]);
   const row = result.rows[0];
   if (!row || row.deleted_at) {
     throw notFound('Vehicle not found');
@@ -1323,10 +1354,9 @@ async function assertDriverAssignable(
     organization_id: string;
     status: DriverStatus;
     deleted_at: Date | null;
-  }>(
-    `SELECT organization_id, status::text AS status, deleted_at FROM drivers WHERE id = $1`,
-    [driverId],
-  );
+  }>(`SELECT organization_id, status::text AS status, deleted_at FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
   const row = result.rows[0];
   if (!row || row.deleted_at) {
     throw notFound('Driver not found');
@@ -1335,7 +1365,9 @@ async function assertDriverAssignable(
     throw forbidden('Driver belongs to another organization');
   }
   if (['INACTIVE', 'SUSPENDED', 'OFF_DUTY'].includes(row.status)) {
-    throw unprocessable(`Driver is ${row.status.replaceAll('_', ' ').toLowerCase()} and cannot be assigned`);
+    throw unprocessable(
+      `Driver is ${row.status.replaceAll('_', ' ').toLowerCase()} and cannot be assigned`,
+    );
   }
   if (forDispatch && !ASSIGNABLE_DRIVER_STATUSES.has(row.status) && row.status !== 'ASSIGNED') {
     throw unprocessable(`Driver status ${row.status} is not available for dispatch`);
