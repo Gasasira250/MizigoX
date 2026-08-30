@@ -125,12 +125,15 @@ describe('production hardening and security', () => {
     const email = `reset.${Date.now()}@example.com`;
     const original = 'Original-Pass-2026!';
     await createCustomerUser({ email, password: original });
+
+    const httpForgot = await request(app).post('/api/v1/auth/forgot-password').send({ email });
+    expect(httpForgot.status).toBe(200);
+    expect(httpForgot.body.data.accepted).toBe(true);
+    expect(httpForgot.body.data.resetToken).toBeUndefined();
+
     const requested = await requestPasswordReset(getPool(), { email });
     expect(requested.accepted).toBe(true);
     expect(requested.resetToken).toBeTruthy();
-
-    const httpForgot = await request(app).post('/api/v1/auth/forgot-password').send({ email });
-    expect(httpForgot.body.data.resetToken).toBeUndefined();
 
     await completePasswordReset(getPool(), {
       token: requested.resetToken!,

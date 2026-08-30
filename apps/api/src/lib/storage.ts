@@ -113,7 +113,7 @@ function sanitizeFilename(filename?: string) {
   }
   const base = path
     .basename(filename)
-    .replace(/[^\w.\-]+/g, '_')
+    .replace(/[^\w.-]+/g, '_')
     .slice(0, 80);
   return base || undefined;
 }
