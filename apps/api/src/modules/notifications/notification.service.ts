@@ -324,6 +324,9 @@ function maskEmail(email: string | null) {
     return null;
   }
   const [local, domain] = email.split('@');
+  if (!local || !domain) {
+    return null;
+  }
   return `${local.slice(0, 1)}***@${domain}`;
 }
 

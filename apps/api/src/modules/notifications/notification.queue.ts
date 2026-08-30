@@ -37,6 +37,18 @@ function parseMetadata(value: unknown): {
 }
 
 export async function processDueDeliveries(pool: Pool, limit = 50) {
+  let processed = 0;
+  let batchSize = 0;
+  let rounds = 0;
+  do {
+    batchSize = await processDeliveryBatch(pool, limit);
+    processed += batchSize;
+    rounds += 1;
+  } while (batchSize === limit && rounds < 40);
+  return processed;
+}
+
+async function processDeliveryBatch(pool: Pool, limit: number) {
   const client = await pool.connect();
   let processed = 0;
   try {
@@ -51,23 +63,27 @@ export async function processDueDeliveries(pool: Pool, limit = 50) {
       metadata: unknown;
     }>(
       `
-        UPDATE notification_deliveries d
-        SET next_retry_at = now() + interval '10 minutes'
-        FROM (
-          SELECT id
-          FROM notification_deliveries
-          WHERE status IN ('PENDING', 'QUEUED', 'FAILED')
-            AND attempts < max_attempts
-            AND (next_retry_at IS NULL OR next_retry_at <= now())
-          ORDER BY created_at
-          LIMIT $1
-          FOR UPDATE SKIP LOCKED
-        ) claimed
-        WHERE d.id = claimed.id
-        RETURNING d.id, d.notification_id, d.organization_id, d.channel, d.attempts, d.max_attempts, d.metadata
+        SELECT id, notification_id, organization_id, channel, attempts, max_attempts, metadata
+        FROM notification_deliveries
+        WHERE status IN ('PENDING', 'QUEUED', 'FAILED')
+          AND attempts < max_attempts
+          AND (next_retry_at IS NULL OR next_retry_at <= now())
+        ORDER BY created_at
+        LIMIT $1
+        FOR UPDATE SKIP LOCKED
       `,
       [limit],
     );
+    if (due.rows.length > 0) {
+      await client.query(
+        `
+          UPDATE notification_deliveries
+          SET next_retry_at = now() + interval '10 minutes'
+          WHERE id = ANY($1::uuid[])
+        `,
+        [due.rows.map((row) => row.id)],
+      );
+    }
     await client.query('COMMIT');
 
     for (const row of due.rows) {
