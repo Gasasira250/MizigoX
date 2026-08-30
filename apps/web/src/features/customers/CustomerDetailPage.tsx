@@ -1,13 +1,17 @@
 import type {
   AddressPayload,
   ContactPayload,
+  CustomerBalancePayload,
   CustomerPayload,
+  InvoicePayload,
   ShipmentPayload,
 } from '@mizigox/shared';
 import {
   ADDRESS_TYPES,
   addressTypeLabel,
   canDeleteCustomers,
+  canReadFinance,
+  canReadInvoices,
   canReadShipments,
   canUpdateCustomers,
   CONTACT_STATUSES,
@@ -22,6 +26,7 @@ import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { useToast } from '../../shared/ui/ToastProvider';
 import { countryOptions, formatApiError, formatDate, locationLabel } from './form-utils';
+import { formatMoney } from '../billing/format';
 
 type ConfirmState =
   | { type: 'deactivate' }
@@ -38,7 +43,10 @@ export function CustomerDetailPage() {
   const { notify } = useToast();
   const canUpdate = canUpdateCustomers(user?.permissions);
   const canDelete = canDeleteCustomers(user?.permissions);
+  const canFinance = canReadInvoices(user?.permissions) || canReadFinance(user?.permissions);
   const [customer, setCustomer] = useState<CustomerPayload | null>(null);
+  const [balance, setBalance] = useState<CustomerBalancePayload | null>(null);
+  const [outstanding, setOutstanding] = useState<InvoicePayload[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
@@ -53,6 +61,14 @@ export function CustomerDetailPage() {
     try {
       setCustomer(await apiGet<CustomerPayload>(`/customers/${customerId}`));
       setError(null);
+      if (canFinance) {
+        const [nextBalance, nextOutstanding] = await Promise.all([
+          apiGet<CustomerBalancePayload>(`/customers/${customerId}/balance`),
+          apiGet<InvoicePayload[]>(`/customers/${customerId}/outstanding-invoices`).catch(() => []),
+        ]);
+        setBalance(nextBalance);
+        setOutstanding(nextOutstanding);
+      }
     } catch (cause) {
       setError(formatApiError(cause, 'Unable to load customer'));
     } finally {
@@ -152,6 +168,47 @@ export function CustomerDetailPage() {
           ) : null}
         </div>
       </div>
+
+      {balance ? (
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-[#12355b]">Financial summary</h2>
+            <Link className="text-sm text-teal-800 hover:underline" to={`/admin/invoices?customerId=${customer.id}`}>
+              View invoices
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <OverviewCard
+              label="Total invoiced"
+              value={formatMoney(balance.totalInvoiced, balance.currencyCode)}
+            />
+            <OverviewCard
+              label="Total paid"
+              value={formatMoney(balance.totalPaid, balance.currencyCode)}
+            />
+            <OverviewCard
+              label="Outstanding"
+              value={formatMoney(balance.outstandingBalance, balance.currencyCode)}
+            />
+            <OverviewCard
+              label="Overdue"
+              value={formatMoney(balance.overdueAmount, balance.currencyCode)}
+            />
+          </div>
+          {outstanding.length > 0 ? (
+            <ul className="mt-4 space-y-1 text-sm">
+              {outstanding.slice(0, 5).map((invoice) => (
+                <li key={invoice.id}>
+                  <Link className="text-teal-800 hover:underline" to={`/admin/invoices/${invoice.id}`}>
+                    {invoice.number}
+                  </Link>{' '}
+                  · {formatMoney(invoice.amountDue, invoice.currencyCode)} due
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <OverviewCard label="Primary contact" value={customer.primaryContactName ?? 'Not set'} />

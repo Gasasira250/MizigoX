@@ -14,6 +14,11 @@ import {
   updateCustomerSchema,
 } from './customer.schemas.js';
 import {
+  getCustomerBalance,
+  listCustomerPaymentHistory,
+  listOutstandingInvoices,
+} from '../billing/billing.service.js';
+import {
   addCustomerAddress,
   addCustomerContact,
   archiveCustomer,
@@ -57,6 +62,35 @@ customerRouter.post(
     const body = createCustomerSchema.parse(req.body);
     const customer = await createCustomer(getPool(), req.auth!, body);
     sendSuccess(res, customer, 201);
+  }),
+);
+
+customerRouter.get(
+  '/:customerId/balance',
+  requireAnyPermission('invoices.read', 'payments.read', 'finance.read', 'invoices.manage'),
+  asyncHandler(async (req, res) => {
+    sendSuccess(res, await getCustomerBalance(getPool(), req.auth!, customerIdOf(req)));
+  }),
+);
+
+customerRouter.get(
+  '/:customerId/outstanding-invoices',
+  requireAnyPermission('invoices.read', 'finance.read', 'invoices.manage'),
+  asyncHandler(async (req, res) => {
+    sendSuccess(res, await listOutstandingInvoices(getPool(), req.auth!, customerIdOf(req)));
+  }),
+);
+
+customerRouter.get(
+  '/:customerId/payment-history',
+  requireAnyPermission('payments.read', 'finance.read', 'payments.manage'),
+  asyncHandler(async (req, res) => {
+    const result = await listCustomerPaymentHistory(getPool(), req.auth!, customerIdOf(req));
+    sendSuccess(res, result.payments, 200, {
+      page: result.page,
+      pageSize: result.pageSize,
+      total: result.total,
+    });
   }),
 );
 

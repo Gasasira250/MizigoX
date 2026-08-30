@@ -19,6 +19,12 @@ import { routeRouter } from './modules/routes/route.routes.js';
 import { dispatchRouter } from './modules/dispatch/dispatch.routes.js';
 import { trackingRouter } from './modules/tracking/tracking.routes.js';
 import { publicTrackingRouter } from './modules/tracking/public-tracking.routes.js';
+import {
+  billingRouter,
+  invoiceRouter,
+  paymentRouter,
+} from './modules/billing/billing.routes.js';
+import { billingWebhookRouter } from './modules/billing/billing.webhook.js';
 
 export function createApp() {
   const env = getEnv();
@@ -43,6 +49,7 @@ export function createApp() {
   app.use('/api/v1/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/public/track', publicTrackingRouter);
+  app.use('/api/v1/webhooks/payments', billingWebhookRouter);
   app.use('/api/v1', identityRouter);
   app.use('/api/v1/customers', customerRouter);
   app.use('/api/v1/shipments', shipmentRouter);
@@ -52,6 +59,9 @@ export function createApp() {
   app.use('/api/v1/routes', routeRouter);
   app.use('/api/v1/dispatch', dispatchRouter);
   app.use('/api/v1/tracking', trackingRouter);
+  app.use('/api/v1/billing', billingRouter);
+  app.use('/api/v1/invoices', invoiceRouter);
+  app.use('/api/v1/payments', paymentRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);
