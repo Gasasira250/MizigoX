@@ -92,7 +92,10 @@ export function PaymentDetailPage() {
         </div>
         <p className="mt-1 text-sm text-slate-600">
           {payment.customerName} · invoice{' '}
-          <Link className="text-teal-800 hover:underline" to={`/admin/invoices/${payment.invoiceId}`}>
+          <Link
+            className="text-teal-800 hover:underline"
+            to={`/admin/invoices/${payment.invoiceId}`}
+          >
             {payment.invoiceNumber}
           </Link>
         </p>

@@ -31,7 +31,10 @@ export function InvoicePrintPage({ basePath }: { basePath: '/admin' | '/portal' 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between print:hidden">
-        <Link className="text-sm text-teal-800 hover:underline" to={`${basePath}/invoices/${invoiceId}`}>
+        <Link
+          className="text-sm text-teal-800 hover:underline"
+          to={`${basePath}/invoices/${invoiceId}`}
+        >
           Back to invoice
         </Link>
         <button
@@ -46,8 +49,12 @@ export function InvoicePrintPage({ basePath }: { basePath: '/admin' | '/portal' 
       <article className="rounded-xl border border-slate-200 bg-white p-8 print:border-0">
         <header className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">MizigoX</p>
-            <h1 className="mt-2 text-3xl font-semibold text-[#12355b]">Invoice {document.invoiceNumber}</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">
+              MizigoX
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold text-[#12355b]">
+              Invoice {document.invoiceNumber}
+            </h1>
             <p className="mt-1 text-sm text-slate-600">
               {invoiceStatusLabel(document.status)} · {document.currencyCode}
             </p>
@@ -99,18 +106,27 @@ export function InvoicePrintPage({ basePath }: { basePath: '/admin' | '/portal' 
         </table>
 
         <section className="mt-6 ml-auto max-w-sm space-y-1 text-sm">
-          <TotalRow label="Subtotal" value={formatMoney(document.totals.subtotal, document.currencyCode)} />
+          <TotalRow
+            label="Subtotal"
+            value={formatMoney(document.totals.subtotal, document.currencyCode)}
+          />
           <TotalRow
             label="Discount"
             value={formatMoney(document.totals.discountAmount, document.currencyCode)}
           />
-          <TotalRow label="Tax" value={formatMoney(document.totals.taxAmount, document.currencyCode)} />
+          <TotalRow
+            label="Tax"
+            value={formatMoney(document.totals.taxAmount, document.currencyCode)}
+          />
           <TotalRow
             label="Total"
             value={formatMoney(document.totals.totalAmount, document.currencyCode)}
             strong
           />
-          <TotalRow label="Paid" value={formatMoney(document.totals.amountPaid, document.currencyCode)} />
+          <TotalRow
+            label="Paid"
+            value={formatMoney(document.totals.amountPaid, document.currencyCode)}
+          />
           <TotalRow
             label="Balance due"
             value={formatMoney(document.totals.amountDue, document.currencyCode)}
@@ -125,7 +141,8 @@ export function InvoicePrintPage({ basePath }: { basePath: '/admin' | '/portal' 
               {document.payments.map((payment) => (
                 <li key={payment.reference}>
                   {payment.reference} · {paymentMethodLabel(payment.method)} ·{' '}
-                  {paymentStatusLabel(payment.status)} · {formatMoney(payment.amount, document.currencyCode)}
+                  {paymentStatusLabel(payment.status)} ·{' '}
+                  {formatMoney(payment.amount, document.currencyCode)}
                 </li>
               ))}
             </ul>
@@ -138,13 +155,7 @@ export function InvoicePrintPage({ basePath }: { basePath: '/admin' | '/portal' 
   );
 }
 
-function Party({
-  title,
-  party,
-}: {
-  title: string;
-  party: InvoiceDocumentPayload['seller'];
-}) {
+function Party({ title, party }: { title: string; party: InvoiceDocumentPayload['seller'] }) {
   return (
     <div>
       <p className="text-xs uppercase tracking-wide text-slate-500">{title}</p>

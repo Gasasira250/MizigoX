@@ -13,7 +13,16 @@ export const SERVICE_TYPES = [
 ] as const;
 export type ServiceType = (typeof SERVICE_TYPES)[number];
 
-export const SERVICE_UNITS = ['TRIP', 'SHIPMENT', 'KG', 'KM', 'PACKAGE', 'HOUR', 'DAY', 'OTHER'] as const;
+export const SERVICE_UNITS = [
+  'TRIP',
+  'SHIPMENT',
+  'KG',
+  'KM',
+  'PACKAGE',
+  'HOUR',
+  'DAY',
+  'OTHER',
+] as const;
 export type ServiceUnit = (typeof SERVICE_UNITS)[number];
 
 export const PRICING_BASES = ['FLAT', 'PER_KG', 'PER_KM', 'PER_PACKAGE', 'CONTRACT'] as const;
@@ -53,19 +62,19 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export const PAYMENT_METHODS = ['CASH', 'BANK_TRANSFER', 'MOBILE_MONEY', 'CARD', 'OTHER'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
-export const PAYMENT_PROVIDERS = ['MANUAL', 'MOBILE_MONEY', 'BANK', 'CARD_GATEWAY', 'OTHER'] as const;
+export const PAYMENT_PROVIDERS = [
+  'MANUAL',
+  'MOBILE_MONEY',
+  'BANK',
+  'CARD_GATEWAY',
+  'OTHER',
+] as const;
 export type PaymentProviderCode = (typeof PAYMENT_PROVIDERS)[number];
 
 export const ADJUSTMENT_TYPES = ['CREDIT', 'DEBIT', 'REFUND'] as const;
 export type AdjustmentType = (typeof ADJUSTMENT_TYPES)[number];
 
-export const PAYMENT_TERMS = [
-  'DUE_ON_RECEIPT',
-  'NET_7',
-  'NET_15',
-  'NET_30',
-  'CUSTOM',
-] as const;
+export const PAYMENT_TERMS = ['DUE_ON_RECEIPT', 'NET_7', 'NET_15', 'NET_30', 'CUSTOM'] as const;
 export type PaymentTerms = (typeof PAYMENT_TERMS)[number];
 
 export const INVOICE_SORT_FIELDS = [
@@ -79,7 +88,13 @@ export const INVOICE_SORT_FIELDS = [
 ] as const;
 export type InvoiceSortField = (typeof INVOICE_SORT_FIELDS)[number];
 
-export const PAYMENT_SORT_FIELDS = ['createdAt', 'paidAt', 'amount', 'status', 'reference'] as const;
+export const PAYMENT_SORT_FIELDS = [
+  'createdAt',
+  'paidAt',
+  'amount',
+  'status',
+  'reference',
+] as const;
 export type PaymentSortField = (typeof PAYMENT_SORT_FIELDS)[number];
 
 export function canTransitionInvoice(from: InvoiceStatus, to: InvoiceStatus) {

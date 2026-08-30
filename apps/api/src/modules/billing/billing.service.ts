@@ -11,6 +11,7 @@ import {
   type InvoiceStatus,
   type PaymentPayload,
   type PaymentTerms,
+  type ServiceUnit,
   type TaxRatePayload,
 } from '@mizigox/shared';
 import type { Pool, PoolClient } from 'pg';
@@ -138,7 +139,10 @@ export async function createTaxRate(
     after: { code: input.code, ratePercent: rate, countryCode: input.countryCode },
   });
   const rates = await listTaxRates(pool, input.countryCode.toUpperCase());
-  return rates.find((tax) => tax.id === created.rows[0]!.id) ?? (await listTaxRates(pool)).find((tax) => tax.id === created.rows[0]!.id)!;
+  return (
+    rates.find((tax) => tax.id === created.rows[0]!.id) ??
+    (await listTaxRates(pool)).find((tax) => tax.id === created.rows[0]!.id)!
+  );
 }
 
 export async function listServices(pool: Pool, actor: AuthContext, organizationId?: string) {
@@ -382,7 +386,13 @@ export async function createInvoice(pool: Pool, actor: AuthContext, input: Creat
       if (isZeroMoney(totals.rows[0]?.total_amount ?? '0.00')) {
         throw unprocessable('Cannot issue an invoice with a zero total');
       }
-      await markIssued(client, invoiceId, input.paymentTerms ?? 'NET_30', input.issueDate, input.dueDate);
+      await markIssued(
+        client,
+        invoiceId,
+        input.paymentTerms ?? 'NET_30',
+        input.issueDate,
+        input.dueDate,
+      );
     }
     await client.query('COMMIT');
     await writeAudit(pool, {
@@ -432,9 +442,7 @@ export async function listInvoices(pool: Pool, actor: AuthContext, query: ListIn
   }
   if (query.q) {
     params.push(`%${query.q.toLowerCase()}%`);
-    where.push(
-      `(lower(i.number) LIKE $${params.length} OR lower(c.name) LIKE $${params.length})`,
-    );
+    where.push(`(lower(i.number) LIKE $${params.length} OR lower(c.name) LIKE $${params.length})`);
   }
   const count = await pool.query<{ total: string }>(
     `
@@ -746,7 +754,11 @@ export async function issueInvoice(pool: Pool, actor: AuthContext, invoiceId: st
   const current = await loadInvoice(pool, actor, invoiceId);
   assertFinanceWrite(actor);
   if (!canTransitionInvoice(current.status, 'ISSUED')) {
-    throw new AppError(422, 'INVOICE_INVALID_TRANSITION', `Cannot issue a ${current.status} invoice.`);
+    throw new AppError(
+      422,
+      'INVOICE_INVALID_TRANSITION',
+      `Cannot issue a ${current.status} invoice.`,
+    );
   }
   if (current.items.length === 0) {
     throw unprocessable('Add at least one invoice item before issuing');
@@ -776,7 +788,11 @@ export async function cancelInvoice(
   const current = await loadInvoice(pool, actor, invoiceId);
   assertFinanceWrite(actor);
   if (!canTransitionInvoice(current.status, mode)) {
-    throw new AppError(422, 'INVOICE_INVALID_TRANSITION', `Cannot ${mode.toLowerCase()} a ${current.status} invoice.`);
+    throw new AppError(
+      422,
+      'INVOICE_INVALID_TRANSITION',
+      `Cannot ${mode.toLowerCase()} a ${current.status} invoice.`,
+    );
   }
   if (current.payments.some((payment) => payment.status === 'SUCCESSFUL')) {
     throw unprocessable('Refund successful payments before cancelling or voiding this invoice');
@@ -1046,9 +1062,10 @@ export async function refundPayment(
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query(`UPDATE payments SET status = 'REFUNDED', updated_at = now() WHERE id = $1`, [
-      paymentId,
-    ]);
+    await client.query(
+      `UPDATE payments SET status = 'REFUNDED', updated_at = now() WHERE id = $1`,
+      [paymentId],
+    );
     await client.query(
       `
         INSERT INTO financial_adjustments (
@@ -1195,7 +1212,9 @@ export async function listPayments(pool: Pool, actor: AuthContext, query: ListPa
   }
   if (query.q) {
     params.push(`%${query.q.toLowerCase()}%`);
-    where.push(`(lower(p.reference) LIKE $${params.length} OR lower(i.number) LIKE $${params.length})`);
+    where.push(
+      `(lower(p.reference) LIKE $${params.length} OR lower(i.number) LIKE $${params.length})`,
+    );
   }
   const count = await pool.query<{ total: string }>(
     `
@@ -1342,7 +1361,11 @@ export async function getCustomerBalance(
   const customer = await loadCustomerOrg(pool, actor, customerId);
   await markOverdue(pool);
   const params: unknown[] = [customer.id];
-  const where = [`i.customer_organization_id = $1`, `i.deleted_at IS NULL`, `i.status NOT IN ('DRAFT', 'CANCELLED', 'VOID')`];
+  const where = [
+    `i.customer_organization_id = $1`,
+    `i.deleted_at IS NULL`,
+    `i.status NOT IN ('DRAFT', 'CANCELLED', 'VOID')`,
+  ];
   applyBillingVisibility(actor, where, params, 'i.organization_id', 'i.customer_organization_id');
   const result = await pool.query(
     `
@@ -1492,14 +1515,14 @@ export async function listInvoiceActivity(pool: Pool, actor: AuthContext, invoic
   }
   const result = await pool.query(
     `
-      SELECT action, entity_type, actor_user_id, created_at,
+      SELECT a.action, a.entity_type, a.actor_user_id, a.created_at,
              NULLIF(trim(concat_ws(' ', u.first_name, u.last_name)), '') AS actor_name
       FROM audit_logs a
       LEFT JOIN users u ON u.id = a.actor_user_id
-      WHERE (a.entity_type = 'invoice' AND a.entity_id = $1)
+      WHERE (a.entity_type = 'invoice' AND a.entity_id = $1::text)
          OR (
            a.entity_type = 'payment'
-           AND a.entity_id IN (SELECT id FROM payments WHERE invoice_id = $1)
+           AND a.entity_id IN (SELECT id::text FROM payments WHERE invoice_id = $1::uuid)
          )
       ORDER BY a.created_at DESC
       LIMIT 50
@@ -1564,7 +1587,7 @@ async function resolveItemAmounts(
   if (input.serviceId) {
     const service = await client.query<{
       name: string;
-      unit: string;
+      unit: ServiceUnit;
       default_price: string | null;
       tax_rate_percent: string | null;
       organization_id: string;
@@ -1610,9 +1633,7 @@ async function resolveItemAmounts(
     serviceId = input.serviceId;
   }
   if (!unitPrice) {
-    throw unprocessable(
-      'Unit price is required when the service has no default or customer price',
-    );
+    throw unprocessable('Unit price is required when the service has no default or customer price');
   }
   const amounts = lineAmounts({
     quantity: input.quantity,
@@ -1810,7 +1831,10 @@ async function attachShipment(
   if (!row) {
     throw notFound('Shipment not found');
   }
-  if (row.customer_organization_id !== customerId || row.operator_organization_id !== organizationId) {
+  if (
+    row.customer_organization_id !== customerId ||
+    row.operator_organization_id !== organizationId
+  ) {
     throw forbidden('Shipment does not belong to this customer and transporter');
   }
   await client.query(
@@ -1931,7 +1955,7 @@ async function loadCustomerOrg(pool: Pool, actor: AuthContext, customerId: strin
     `
       SELECT formatted_address FROM addresses
       WHERE organization_id = $1 AND address_type = 'BILLING' AND deleted_at IS NULL
-      ORDER BY is_primary DESC, created_at
+      ORDER BY is_default DESC, created_at
       LIMIT 1
     `,
     [customerId],

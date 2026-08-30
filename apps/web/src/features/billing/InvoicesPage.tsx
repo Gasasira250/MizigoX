@@ -195,10 +195,7 @@ export function InvoicesPage({ basePath }: { basePath: '/admin' | '/portal' }) {
           Overdue only
         </label>
         <div className="flex gap-2 md:col-span-2">
-          <button
-            className="rounded-md bg-[#12355b] px-3 py-2 text-sm text-white"
-            type="submit"
-          >
+          <button className="rounded-md bg-[#12355b] px-3 py-2 text-sm text-white" type="submit">
             Search
           </button>
           <button
@@ -226,7 +223,9 @@ export function InvoicesPage({ basePath }: { basePath: '/admin' | '/portal' }) {
         </div>
       </form>
 
-      {error ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+      {error ? (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+      ) : null}
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <table className="min-w-full text-left text-sm">
