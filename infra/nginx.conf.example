@@ -1,0 +1,39 @@
+# Example nginx for MizigoX
+
+# Frontend: https://app.mizigox.com  (placeholders — configure DNS yourself)
+# API:       https://api.mizigox.com
+# Terminate TLS with Let's Encrypt / your certificate manager.
+
+# --- API ---
+# upstream mizigox_api {
+#   server 127.0.0.1:3001;
+# }
+#
+# server {
+#   listen 443 ssl http2;
+#   server_name api.mizigox.com;
+#   # ssl_certificate ...;
+#   # ssl_certificate_key ...;
+#   add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+#   client_max_body_size 2m;
+#   location / {
+#     proxy_pass http://mizigox_api;
+#     proxy_set_header Host $host;
+#     proxy_set_header X-Real-IP $remote_addr;
+#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#     proxy_set_header X-Forwarded-Proto https;
+#   }
+# }
+
+# --- Web SPA ---
+# server {
+#   listen 443 ssl http2;
+#   server_name app.mizigox.com;
+#   root /var/www/mizigox-web;
+#   add_header X-Frame-Options DENY always;
+#   add_header X-Content-Type-Options nosniff always;
+#   add_header Referrer-Policy strict-origin-when-cross-origin always;
+#   location / {
+#     try_files $uri $uri/ /index.html;
+#   }
+# }
