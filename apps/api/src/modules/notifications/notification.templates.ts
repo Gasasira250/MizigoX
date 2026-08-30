@@ -28,12 +28,16 @@ export async function renderNotificationContent(
     `,
     [type, channel],
   );
-  const template = result.rows[0] ?? FALLBACKS[channel] ?? FALLBACKS.IN_APP;
+  const fallback = FALLBACKS[channel] ?? {
+    subject: null as string | null,
+    body: 'You have a new MizigoX notification.',
+  };
+  const template = result.rows[0] ?? fallback;
+  const subject = template.subject ? renderNotificationTemplate(template.subject, variables) : null;
+  const body = renderNotificationTemplate(template.body, variables);
   return {
-    subject: template.subject ? renderNotificationTemplate(template.subject, variables) : null,
-    body: renderNotificationTemplate(template.body, variables),
-    title: template.subject
-      ? renderNotificationTemplate(template.subject, variables)
-      : renderNotificationTemplate(template.body, variables).slice(0, 120),
+    subject,
+    body,
+    title: subject ?? body.slice(0, 120),
   };
 }
