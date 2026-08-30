@@ -115,6 +115,10 @@ export function DriverFormPage() {
   async function onOrganizationChange(organizationId: string) {
     update('organizationId', organizationId);
     update('userId', '');
+    if (!organizationId) {
+      setLinkableUsers([]);
+      return;
+    }
     try {
       await loadLinkable(organizationId);
     } catch (cause) {
