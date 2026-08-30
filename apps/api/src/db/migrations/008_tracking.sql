@@ -97,8 +97,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS tracking_events_dedupe_idx
     event_type,
     coalesce(route_id, '00000000-0000-0000-0000-000000000000'::uuid),
     coalesce(shipment_id, '00000000-0000-0000-0000-000000000000'::uuid),
-    coalesce(stop_id, '00000000-0000-0000-0000-000000000000'::uuid),
-    date_trunc('minute', occurred_at)
+    coalesce(stop_id, '00000000-0000-0000-0000-000000000000'::uuid)
   )
   WHERE event_type <> 'LOCATION_UPDATED';
 

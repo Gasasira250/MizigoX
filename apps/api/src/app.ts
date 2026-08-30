@@ -42,6 +42,7 @@ export function createApp() {
 
   app.use('/api/v1/health', healthRouter);
   app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/public/track', publicTrackingRouter);
   app.use('/api/v1', identityRouter);
   app.use('/api/v1/customers', customerRouter);
   app.use('/api/v1/shipments', shipmentRouter);
@@ -51,7 +52,6 @@ export function createApp() {
   app.use('/api/v1/routes', routeRouter);
   app.use('/api/v1/dispatch', dispatchRouter);
   app.use('/api/v1/tracking', trackingRouter);
-  app.use('/api/v1/public/track', publicTrackingRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);

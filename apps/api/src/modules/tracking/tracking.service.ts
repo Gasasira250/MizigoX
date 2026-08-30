@@ -148,7 +148,9 @@ export async function submitLocation(pool: Pool, actor: AuthContext, input: Subm
         deviceAt.toISOString(),
       ],
     );
-    if (await shouldRecordLocationEvent(client, assignment.vehicleId, input.latitude, input.longitude)) {
+    if (
+      await shouldRecordLocationEvent(client, assignment.vehicleId, input.latitude, input.longitude)
+    ) {
       await insertTrackingEvent(client, {
         organizationId: assignment.organizationId,
         type: 'LOCATION_UPDATED',
@@ -627,7 +629,10 @@ export async function getLiveDashboard(
     vehicles = vehicles.filter((item) => item.freshness === query.freshness);
   }
 
-  const routeWhere = [`r.deleted_at IS NULL`, `r.status::text IN ('DISPATCHED', 'IN_TRANSIT', 'ARRIVED')`];
+  const routeWhere = [
+    `r.deleted_at IS NULL`,
+    `r.status::text IN ('DISPATCHED', 'IN_TRANSIT', 'ARRIVED')`,
+  ];
   const routeParams: unknown[] = [];
   applyOperatorFilter(actor, routeWhere, routeParams, 'r.organization_id');
   if (query.organizationId && actor.orgType === 'PLATFORM') {
@@ -845,13 +850,7 @@ export async function issueShipmentTrackingToken(
       )
       VALUES ($1, $2, $3, $4, $5)
     `,
-    [
-      shipmentId,
-      shipment.rows[0].operator_organization_id,
-      hashToken(raw),
-      hint,
-      actor.userId,
-    ],
+    [shipmentId, shipment.rows[0].operator_organization_id, hashToken(raw), hint, actor.userId],
   );
   await writeAudit(pool, {
     actorUserId: actor.userId,
@@ -945,12 +944,8 @@ export async function recordOperationalTrackingEvent(
   await insertTrackingEvent(pool, input);
 }
 
-async function resolveAuthorizedAssignment(
-  pool: Pool,
-  actor: AuthContext,
-  input: SubmitInput,
-) {
-  if (actor.role === 'DRIVER' || (actor.orgType === 'OPERATOR' && actor.role === 'DRIVER')) {
+async function resolveAuthorizedAssignment(pool: Pool, actor: AuthContext, input: SubmitInput) {
+  if (actor.role === 'DRIVER') {
     return resolveDriverAssignment(pool, actor, input);
   }
   if (!canManageOrOpsSubmit(actor)) {
@@ -1130,12 +1125,8 @@ async function shouldRecordLocationEvent(
     return true;
   }
   return (
-    haversineMeters(
-      Number(previous.latitude),
-      Number(previous.longitude),
-      latitude,
-      longitude,
-    ) >= 50
+    haversineMeters(Number(previous.latitude), Number(previous.longitude), latitude, longitude) >=
+    50
   );
 }
 
@@ -1339,7 +1330,7 @@ function mapVehicleLocation(row: Record<string, unknown>): VehicleLocationPayloa
   return {
     vehicleId: String(row.vehicle_id),
     organizationId: String(row.organization_id),
-    vehicleReference: (row.vehicle_reference as string | null) ?? null;
+    vehicleReference: (row.vehicle_reference as string | null) ?? null,
     vehicleRegistration: (row.registration_number as string | null) ?? null,
     driverId: (row.driver_id as string | null) ?? null,
     driverName: (row.driver_name as string | null) ?? null,

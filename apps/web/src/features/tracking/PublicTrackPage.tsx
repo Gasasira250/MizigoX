@@ -27,7 +27,9 @@ export function PublicTrackPage() {
         setConfig(trackingConfig);
         setError(null);
       })
-      .catch((cause) => setError(formatApiError(cause, 'Tracking link is invalid or has been revoked')));
+      .catch((cause) =>
+        setError(formatApiError(cause, 'Tracking link is invalid or has been revoked')),
+      );
   }, [token]);
 
   return (
@@ -80,7 +82,9 @@ export function PublicTrackPage() {
             <section className="grid gap-4 md:grid-cols-2">
               <article className="rounded-xl border border-slate-200 bg-white p-5">
                 <h2 className="text-sm font-semibold text-[#12355b]">Pickup</h2>
-                <p className="mt-2 text-sm text-slate-800">{tracking.pickup.formattedAddress ?? '—'}</p>
+                <p className="mt-2 text-sm text-slate-800">
+                  {tracking.pickup.formattedAddress ?? '—'}
+                </p>
                 <p className="text-sm text-slate-500">{tracking.pickup.contactName ?? ''}</p>
               </article>
               <article className="rounded-xl border border-slate-200 bg-white p-5">
@@ -106,7 +110,10 @@ export function PublicTrackPage() {
               ) : (
                 <ol className="mt-3 space-y-3">
                   {tracking.timeline.map((event, index) => (
-                    <li key={`${event.occurredAt}-${index}`} className="border-l-2 border-teal-200 pl-3">
+                    <li
+                      key={`${event.occurredAt}-${index}`}
+                      className="border-l-2 border-teal-200 pl-3"
+                    >
                       <p className="text-sm font-medium text-slate-900">
                         {event.type.replaceAll('_', ' ')}
                       </p>

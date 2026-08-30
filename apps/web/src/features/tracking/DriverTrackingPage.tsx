@@ -54,9 +54,7 @@ export function DriverTrackingPage() {
             source: 'DRIVER_WEB',
             deviceLabel: navigator.userAgent.slice(0, 80),
           });
-          notify(
-            `Location submitted: ${formatCoordinates(latest.latitude, latest.longitude)}`,
-          );
+          notify(`Location submitted: ${formatCoordinates(latest.latitude, latest.longitude)}`);
           await load();
         } catch (cause) {
           notify(formatApiError(cause, 'Unable to submit location'));

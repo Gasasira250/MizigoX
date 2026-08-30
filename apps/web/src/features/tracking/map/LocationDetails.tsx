@@ -1,6 +1,12 @@
 import type { VehicleLocationPayload } from '@mizigox/shared';
 import { FreshnessBadge } from '../FreshnessBadge';
-import { formatAge, formatCoordinates, formatDateTime, formatHeading, formatSpeed } from '../format';
+import {
+  formatAge,
+  formatCoordinates,
+  formatDateTime,
+  formatHeading,
+  formatSpeed,
+} from '../format';
 
 export function LocationDetails({
   location,
@@ -18,7 +24,10 @@ export function LocationDetails({
         <p className="mt-3 text-sm text-slate-500">{empty}</p>
       ) : (
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <Item label="Coordinates" value={formatCoordinates(location.latitude, location.longitude)} />
+          <Item
+            label="Coordinates"
+            value={formatCoordinates(location.latitude, location.longitude)}
+          />
           <Item label="Last update" value={formatDateTime(location.lastUpdatedAt)} />
           <Item label="Age" value={formatAge(location.ageSeconds)} />
           <div>

@@ -53,7 +53,9 @@ export function ShipmentTrackingPanel({
   async function issueToken() {
     setBusy(true);
     try {
-      const issued = await apiPost<ShipmentTrackingTokenPayload>(`/tracking/shipments/${shipmentId}/token`);
+      const issued = await apiPost<ShipmentTrackingTokenPayload>(
+        `/tracking/shipments/${shipmentId}/token`,
+      );
       setIssuedToken(issued.token);
       notify('A new customer tracking link was issued. Copy it now; it will not be shown again.');
       await load();
@@ -93,7 +95,10 @@ export function ShipmentTrackingPanel({
           <FreshnessBadge freshness={tracking.currentLocation.freshness} />
         ) : null}
         {tracking.route && basePath === '/admin' ? (
-          <Link className="text-sm text-teal-800 hover:underline" to={`/admin/tracking/routes/${tracking.route.id}`}>
+          <Link
+            className="text-sm text-teal-800 hover:underline"
+            to={`/admin/tracking/routes/${tracking.route.id}`}
+          >
             {tracking.route.reference}
           </Link>
         ) : tracking.route ? (
@@ -153,9 +158,13 @@ export function ShipmentTrackingPanel({
           <ol className="mt-3 space-y-3">
             {tracking.events.map((event) => (
               <li key={event.id} className="border-l-2 border-teal-200 pl-3">
-                <p className="text-sm font-medium text-slate-900">{event.type.replaceAll('_', ' ')}</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {event.type.replaceAll('_', ' ')}
+                </p>
                 <p className="text-xs text-slate-500">{formatDateTime(event.occurredAt)}</p>
-                {event.description ? <p className="text-sm text-slate-600">{event.description}</p> : null}
+                {event.description ? (
+                  <p className="text-sm text-slate-600">{event.description}</p>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -165,8 +174,8 @@ export function ShipmentTrackingPanel({
         <section className="rounded-lg border border-slate-200 p-4">
           <h3 className="text-sm font-semibold text-[#12355b]">Customer tracking link</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Public tracking uses an opaque token, not the shipment database id. The raw token is shown
-            only when issued or regenerated.
+            Public tracking uses an opaque token, not the shipment database id. The raw token is
+            shown only when issued or regenerated.
           </p>
           <p className="mt-2 text-xs text-slate-500">
             {tracking.hasActiveTrackingToken

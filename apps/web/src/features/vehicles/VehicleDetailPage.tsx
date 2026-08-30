@@ -267,7 +267,10 @@ export function VehicleDetailPage() {
             </dl>
             {vehicle.notes ? <p className="mt-4 text-sm text-slate-600">{vehicle.notes}</p> : null}
             <p className="mt-4 text-sm">
-              <Link className="text-teal-800 hover:underline" to={`/admin/tracking/vehicles/${vehicle.id}`}>
+              <Link
+                className="text-teal-800 hover:underline"
+                to={`/admin/tracking/vehicles/${vehicle.id}`}
+              >
                 Open vehicle tracking
               </Link>
             </p>

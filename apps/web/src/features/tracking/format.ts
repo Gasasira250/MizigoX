@@ -46,7 +46,12 @@ export function freshnessCopy(state: string) {
 }
 
 export function formatApiError(error: unknown, fallback: string) {
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
     return error.message;
   }
   return fallback;

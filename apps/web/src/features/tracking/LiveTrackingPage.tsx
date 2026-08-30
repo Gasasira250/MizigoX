@@ -71,13 +71,13 @@ export function LiveTrackingPage() {
   }, [load]);
 
   useEffect(() => {
-    if (user?.orgType !== 'PLATFORM') {
+    if (user?.organization.type !== 'PLATFORM') {
       return;
     }
     void apiGet<OrganizationOption[]>('/organizations')
       .then((rows) => setOrganizations(rows.filter((row) => row.type === 'OPERATOR')))
       .catch(() => setOrganizations([]));
-  }, [user?.orgType]);
+  }, [user?.organization.type]);
 
   const applyStream = useCallback((payload: VehicleLocationPayload) => {
     setData((current) => {
@@ -120,7 +120,7 @@ export function LiveTrackingPage() {
       </div>
 
       <form className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-4">
-        {user?.orgType === 'PLATFORM' ? (
+        {user?.organization.type === 'PLATFORM' ? (
           <label className="text-sm">
             Organization
             <select
@@ -289,7 +289,10 @@ export function LiveTrackingPage() {
             <ul className="mt-3 space-y-3">
               {data?.activeRoutes.map((route) => (
                 <li key={route.id}>
-                  <Link className="text-sm font-medium text-teal-800 hover:underline" to={`/admin/tracking/routes/${route.id}`}>
+                  <Link
+                    className="text-sm font-medium text-teal-800 hover:underline"
+                    to={`/admin/tracking/routes/${route.id}`}
+                  >
                     {route.reference}
                   </Link>
                   <p className="text-xs text-slate-500">
@@ -330,7 +333,9 @@ export function LiveTrackingPage() {
           )}
         </article>
       </section>
-      <p className="text-xs text-slate-400">Last dashboard refresh {formatDateTime(new Date().toISOString())}.</p>
+      <p className="text-xs text-slate-400">
+        Last dashboard refresh {formatDateTime(new Date().toISOString())}.
+      </p>
     </div>
   );
 }
