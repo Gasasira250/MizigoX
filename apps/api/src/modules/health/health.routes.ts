@@ -32,7 +32,7 @@ healthRouter.get(
           },
         },
       });
-    } catch (error) {
+    } catch {
       res.status(503).json({
         data: {
           status: 'error',
@@ -40,7 +40,6 @@ healthRouter.get(
             database: {
               status: 'error',
               latencyMs: Date.now() - started,
-              message: error instanceof Error ? error.message : 'Database unavailable',
             },
           },
         },

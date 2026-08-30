@@ -19,7 +19,8 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "db:migrate": "npm run db:migrate -w @mizigox/api",
-    "db:seed": "npm run db:seed -w @mizigox/api"
+    "db:seed": "npm run db:seed -w @mizigox/api",
+    "start": "npm run start -w @mizigox/api"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",

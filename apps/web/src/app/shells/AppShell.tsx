@@ -98,7 +98,7 @@ export function AppShell() {
             ))}
           </nav>
         </aside>
-        <main id="main-content" className="p-4 sm:p-6">
+        <main id="main-content" className="overflow-x-auto p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

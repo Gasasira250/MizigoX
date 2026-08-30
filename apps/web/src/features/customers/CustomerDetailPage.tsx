@@ -264,17 +264,6 @@ export function CustomerDetailPage() {
 
       <CustomerShipments customerId={customer.id} />
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Placeholder
-          title="Invoice summary"
-          body="Outstanding balances and recent invoices will appear here when billing is implemented."
-        />
-        <Placeholder
-          title="Activity / history"
-          body="Customer profile changes and operational events will be listed here in a later phase."
-        />
-      </section>
-
       {confirm ? (
         <ConfirmDialog
           title={confirmTitle(confirm, customer)}
@@ -792,15 +781,6 @@ function Item({ label, value }: { label: string; value: string | null }) {
       <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
       <dd className="mt-1 text-slate-800">{value || '—'}</dd>
     </div>
-  );
-}
-
-function Placeholder({ title, body }: { title: string; body: string }) {
-  return (
-    <article className="rounded-xl border border-dashed border-slate-300 bg-white p-5">
-      <h2 className="text-sm font-semibold text-[#12355b]">{title}</h2>
-      <p className="mt-2 text-sm text-slate-500">{body}</p>
-    </article>
   );
 }
 

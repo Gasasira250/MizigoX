@@ -21,7 +21,7 @@ billingWebhookRouter.post(
       (typeof req.header('x-webhook-signature') === 'string'
         ? req.header('x-webhook-signature')
         : undefined);
-    verifyProviderWebhook(signature, JSON.stringify(req.body ?? {}));
+    verifyProviderWebhook(signature, req.rawBody ?? '');
     const body = providerWebhookSchema.parse(req.body);
     const payment = await applyProviderWebhook(getPool(), provider, body);
     sendSuccess(res, payment);

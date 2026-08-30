@@ -2,10 +2,12 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import { getEnv } from './config/env.js';
+import { allowedWebOrigins, getEnv, isProductionLike } from './config/env.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { notFoundHandler } from './middleware/not-found.js';
 import { requestId } from './middleware/request-id.js';
+import { requireHttps } from './middleware/require-https.js';
+import { requireJsonContentType } from './middleware/require-json.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
@@ -26,22 +28,53 @@ import { portalRouter } from './modules/portals/portals.routes.js';
 
 export function createApp() {
   const env = getEnv();
+  const production = isProductionLike(env);
+  const origins = allowedWebOrigins(env);
   const app = express();
 
   app.set('trust proxy', 1);
   app.use(requestId);
+  app.use(requireHttps);
   app.use(
     helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
       crossOriginResourcePolicy: { policy: 'cross-origin' },
+      referrerPolicy: { policy: 'no-referrer' },
+      frameguard: { action: 'deny' },
+      hsts: production ? { maxAge: 15_552_000, includeSubDomains: true } : false,
     }),
   );
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader(
+      'Permissions-Policy',
+      'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+    );
+    res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+    next();
+  });
   app.use(
     cors({
-      origin: env.WEB_ORIGIN,
+      origin(origin, callback) {
+        if (!origin || origins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+        callback(null, false);
+      },
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: '2mb' }));
+  app.use(requireJsonContentType);
+  app.use(
+    express.json({
+      limit: '2mb',
+      verify: (req, _res, buf) => {
+        (req as express.Request).rawBody = buf.toString('utf8');
+      },
+    }),
+  );
   app.use(cookieParser());
 
   app.use('/api/v1/health', healthRouter);

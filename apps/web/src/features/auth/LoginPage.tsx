@@ -76,6 +76,11 @@ export function LoginPage() {
             {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+        <p className="mt-4 text-sm text-slate-600">
+          <Link className="font-medium text-teal-800 hover:underline" to="/forgot-password">
+            Forgot password?
+          </Link>
+        </p>
         <p className="mt-6 text-sm text-slate-600">
           Invited to MizigoX? Open the invite link from your administrator, or go to{' '}
           <Link className="font-medium text-teal-800 hover:underline" to="/register">

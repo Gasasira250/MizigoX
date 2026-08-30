@@ -1,6 +1,15 @@
 import type { ApiErrorBody } from '@mizigox/shared';
 
-const API_BASE = '/api/v1';
+function resolveApiBase() {
+  const raw = import.meta.env.VITE_API_BASE_URL?.trim();
+  if (!raw) {
+    return '/api/v1';
+  }
+  const trimmed = raw.replace(/\/$/, '');
+  return trimmed.endsWith('/api/v1') ? trimmed : `${trimmed}/api/v1`;
+}
+
+const API_BASE = resolveApiBase();
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string | null> | null = null;
@@ -47,6 +56,17 @@ async function parseBody(response: Response) {
   } & Partial<ApiErrorBody>;
 }
 
+async function fetchApi(path: string, init: RequestInit) {
+  try {
+    return await fetch(`${API_BASE}${path}`, {
+      ...init,
+      credentials: init.credentials ?? 'include',
+    });
+  } catch {
+    throw new ApiError(0, 'NETWORK_ERROR', 'Unable to reach MizigoX. Check your connection.');
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}, allowRefresh = true): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has('Content-Type')) {
@@ -56,11 +76,7 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers,
-    credentials: 'include',
-  });
+  const response = await fetchApi(path, { ...init, headers });
 
   if (
     response.status === 401 &&
@@ -75,7 +91,9 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
     unauthorizedHandler?.();
   }
 
-  const body = await parseBody(response);
+  const body = await parseBody(response).catch(() => ({
+    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
+  }));
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,
@@ -94,17 +112,18 @@ export async function apiGetWithMeta<T>(path: string) {
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers,
-    credentials: 'include',
-  });
+  const response = await fetchApi(path, { headers });
   if (response.status === 401 && path !== '/auth/refresh' && path !== '/auth/login') {
     const nextToken = await refreshAccessToken();
     if (nextToken) {
       return apiGetWithMeta<T>(path);
     }
   }
-  const body = await parseBody(response);
+  const body = await parseBody(response).catch(() => ({
+    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
+    data: undefined,
+    meta: {},
+  }));
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,
@@ -125,8 +144,10 @@ export function apiGet<T>(path: string) {
 }
 
 export async function apiGetPublic<T>(path: string) {
-  const response = await fetch(`${API_BASE}${path}`, { credentials: 'omit' });
-  const body = await parseBody(response);
+  const response = await fetchApi(path, { credentials: 'omit' });
+  const body = await parseBody(response).catch(() => ({
+    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
+  }));
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,

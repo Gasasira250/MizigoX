@@ -7,7 +7,7 @@ import {
   type ShipmentPayload,
 } from '@mizigox/shared';
 import type { Pool } from 'pg';
-import { getEnv } from '../../config/env.js';
+import { getEnv, publicAppUrl } from '../../config/env.js';
 import { emitNotification } from './notify.js';
 
 export async function notifyShipmentEvent(
@@ -151,7 +151,7 @@ export async function notifyInvitation(
     channels: ['EMAIL'],
     variables: {
       organization_name: input.organizationName,
-      invite_url: `${env.WEB_ORIGIN}/register?token=${input.token}`,
+      invite_url: `${publicAppUrl(env)}/register?token=${input.token}`,
     },
   });
 }
