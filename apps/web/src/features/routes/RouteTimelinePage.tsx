@@ -62,7 +62,9 @@ export function RouteTimelinePage() {
 
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         {!canHistory ? (
-          <p className="text-sm text-slate-500">You do not have permission to view route history.</p>
+          <p className="text-sm text-slate-500">
+            You do not have permission to view route history.
+          </p>
         ) : route.events.length === 0 ? (
           <p className="text-sm text-slate-500">No events recorded yet.</p>
         ) : (

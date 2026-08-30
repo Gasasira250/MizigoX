@@ -8,7 +8,7 @@ import type {
 import { canCreateRoutes, canUpdateRoutes, routeStatusLabel } from '@mizigox/shared';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { apiGet, apiGetWithMeta } from '../../shared/api/client';
+import { apiGetWithMeta } from '../../shared/api/client';
 import { useAuth } from '../../shared/auth/AuthProvider';
 import { StatusBadge } from '../../shared/ui/StatusBadge';
 import { formatApiError, formatDate, routeStatusOptions } from './form-utils';
@@ -234,7 +234,11 @@ export function RoutesPage() {
                 ] as Array<[RouteSortField, string]>
               ).map(([field, label]) => (
                 <th key={field} className="px-4 py-3">
-                  <button type="button" className="hover:text-[#12355b]" onClick={() => setSortPair(field)}>
+                  <button
+                    type="button"
+                    className="hover:text-[#12355b]"
+                    onClick={() => setSortPair(field)}
+                  >
                     {label}
                     {sort === field ? (order === 'asc' ? ' ↑' : ' ↓') : ''}
                   </button>
@@ -273,10 +277,14 @@ export function RoutesPage() {
                     <StatusBadge status={route.status} />
                     <span className="sr-only">{routeStatusLabel(route.status)}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{formatDate(route.plannedDepartureAt)}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {formatDate(route.plannedDepartureAt)}
+                  </td>
                   <td className="px-4 py-3 text-slate-600">{formatDate(route.plannedArrivalAt)}</td>
                   <td className="px-4 py-3 text-slate-600">{formatDate(route.updatedAt)}</td>
-                  <td className="max-w-[10rem] truncate px-4 py-3 text-slate-600">{route.origin ?? '—'}</td>
+                  <td className="max-w-[10rem] truncate px-4 py-3 text-slate-600">
+                    {route.origin ?? '—'}
+                  </td>
                   <td className="max-w-[10rem] truncate px-4 py-3 text-slate-600">
                     {route.destination ?? '—'}
                   </td>

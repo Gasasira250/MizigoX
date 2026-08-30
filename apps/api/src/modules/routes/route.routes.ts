@@ -59,7 +59,11 @@ routeRouter.post(
   '/',
   requireAnyPermission('routes.manage', 'routes.create'),
   asyncHandler(async (req, res) => {
-    sendSuccess(res, await createRoute(getPool(), req.auth!, createRouteSchema.parse(req.body)), 201);
+    sendSuccess(
+      res,
+      await createRoute(getPool(), req.auth!, createRouteSchema.parse(req.body)),
+      201,
+    );
   }),
 );
 
@@ -129,7 +133,11 @@ routeRouter.post(
   requireAnyPermission('routes.manage', 'routes.update'),
   asyncHandler(async (req, res) => {
     const body = addRouteShipmentSchema.parse(req.body);
-    sendSuccess(res, await addRouteShipment(getPool(), req.auth!, routeIdOf(req), body.shipmentId), 201);
+    sendSuccess(
+      res,
+      await addRouteShipment(getPool(), req.auth!, routeIdOf(req), body.shipmentId),
+      201,
+    );
   }),
 );
 
@@ -138,7 +146,10 @@ routeRouter.delete(
   requireAnyPermission('routes.manage', 'routes.update'),
   asyncHandler(async (req, res) => {
     const params = routeShipmentParamSchema.parse(req.params);
-    sendSuccess(res, await removeRouteShipment(getPool(), req.auth!, params.routeId, params.shipmentId));
+    sendSuccess(
+      res,
+      await removeRouteShipment(getPool(), req.auth!, params.routeId, params.shipmentId),
+    );
   }),
 );
 
@@ -148,7 +159,12 @@ routeRouter.post(
   asyncHandler(async (req, res) => {
     sendSuccess(
       res,
-      await addRouteStop(getPool(), req.auth!, routeIdOf(req), routeStopInputSchema.parse(req.body)),
+      await addRouteStop(
+        getPool(),
+        req.auth!,
+        routeIdOf(req),
+        routeStopInputSchema.parse(req.body),
+      ),
       201,
     );
   }),
