@@ -452,6 +452,12 @@ describe('notifications and communications', () => {
         `SELECT id FROM organizations WHERE type = 'OPERATOR' ORDER BY created_at LIMIT 1`,
       )
     ).rows[0]!.id;
+    await createOrgUser({
+      email: `notify.ops.${stamp}@example.com`,
+      password: 'Operator-Pass-2026!',
+      role: 'LOGISTICS_MANAGER',
+      organizationId: operatorId,
+    });
     const vehicle = await request(app)
       .post('/api/v1/vehicles')
       .set(auth(admin))
