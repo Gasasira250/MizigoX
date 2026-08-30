@@ -75,6 +75,33 @@ const envSchema = z.object({
   PAYMENT_GATEWAY_BASE_URL: z.string().url().optional(),
   PAYMENT_GATEWAY_API_KEY: z.string().optional(),
   PAYMENT_WEBHOOK_SECRET: z.string().optional(),
+  NOTIFICATION_EMAIL_PROVIDER: z.enum(['log', 'smtp', 'resend', 'sendgrid', 'ses']).default('log'),
+  NOTIFICATION_SMS_PROVIDER: z.enum(['log', 'http']).default('log'),
+  NOTIFICATION_PUSH_PROVIDER: z.enum(['disabled', 'log', 'fcm', 'apns']).default('disabled'),
+  NOTIFICATION_EMAIL_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  NOTIFICATION_SMS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  NOTIFICATION_PUSH_ENABLED: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  NOTIFICATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(20).default(5),
+  SMTP_URL: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  SENDGRID_API_KEY: z.string().optional(),
+  AWS_SES_REGION: z.string().optional(),
+  AWS_SES_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SES_SECRET_ACCESS_KEY: z.string().optional(),
+  SMS_API_BASE_URL: z.string().url().optional(),
+  SMS_API_KEY: z.string().optional(),
+  SMS_FROM: z.string().optional(),
+  PUSH_FCM_SERVER_KEY: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

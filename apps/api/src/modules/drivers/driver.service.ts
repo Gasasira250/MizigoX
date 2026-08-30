@@ -18,6 +18,7 @@ import {
   nextFleetReference,
   resolveOperatorOrganizationId,
 } from '../fleet/tenant.js';
+import { emitNotification } from '../notifications/notify.js';
 import type { z } from 'zod';
 import type {
   createDriverSchema,
@@ -367,7 +368,23 @@ export async function updateDriverStatus(
     before: { status: current.status, availability: current.availability },
     after: { status: input.status, availability, note: input.note ?? null },
   });
-  return loadDriver(pool, actor, driverId);
+  const updated = await loadDriver(pool, actor, driverId);
+  if (updated.availability === 'UNAVAILABLE') {
+    await emitNotification(pool, {
+      type: 'DRIVER_UNAVAILABLE',
+      organizationId: updated.organizationId,
+      operatorOrganizationId: updated.organizationId,
+      relatedEntityType: 'driver',
+      relatedEntityId: updated.id,
+      relatedReference: `${updated.firstName} ${updated.lastName}`,
+      actorUserId: actor.userId,
+      variables: {
+        driver_name: `${updated.firstName} ${updated.lastName}`,
+        organization_name: updated.organizationName,
+      },
+    });
+  }
+  return updated;
 }
 
 export async function archiveDriver(pool: Pool, actor: AuthContext, driverId: string) {

@@ -9,6 +9,8 @@ export function StatusBadge({ status }: { status: string }) {
     status === 'ARRIVED' ||
     status === 'LIVE' ||
     status === 'PAID' ||
+    status === 'SENT' ||
+    status === 'READ' ||
     status === 'SUCCESSFUL'
       ? 'bg-emerald-50 text-emerald-800'
       : status === 'CANCELLED' ||
@@ -19,8 +21,7 @@ export function StatusBadge({ status }: { status: string }) {
           status === 'DRAFT' ||
           status === 'SKIPPED' ||
           status === 'OFFLINE' ||
-          status === 'VOID' ||
-          status === 'CANCELLED'
+          status === 'VOID'
         ? 'bg-slate-100 text-slate-600'
         : status === 'EXCEPTION' ||
             status === 'DELIVERY_FAILED' ||
@@ -44,7 +45,9 @@ export function StatusBadge({ status }: { status: string }) {
                 status === 'REFUNDED' ||
                 status === 'ISSUED'
               ? 'bg-amber-50 text-amber-800'
-              : status === 'ASSIGNED' ||
+              : status === 'QUEUED' ||
+                  status === 'UNREAD' ||
+                  status === 'ASSIGNED' ||
                   status === 'PENDING' ||
                   status === 'READY' ||
                   status === 'PLANNED' ||

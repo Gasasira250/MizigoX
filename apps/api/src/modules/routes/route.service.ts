@@ -23,6 +23,7 @@ import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.j
 import type { AuthContext } from '../auth/auth.types.js';
 import { applyOperatorFilter, assertOperatorAccess } from '../fleet/tenant.js';
 import { insertTrackingEvent } from '../tracking/tracking.service.js';
+import { notifyRouteEvent } from '../notifications/notification.hooks.js';
 import type { z } from 'zod';
 import type {
   createRouteSchema,
@@ -134,7 +135,15 @@ export async function createRoute(pool: Pool, actor: AuthContext, input: CreateR
       entityId: routeId,
       after: { reference, status: initialStatus, shipmentIds: input.shipmentIds },
     });
-    return loadRoute(pool, actor, routeId);
+    const createdRoute = await loadRoute(pool, actor, routeId);
+    await notifyRouteEvent(pool, createdRoute, undefined, actor.userId);
+    if (input.driverId) {
+      await notifyRouteEvent(pool, createdRoute, 'ROUTE_DRIVER_ASSIGNED', actor.userId);
+    }
+    if (input.vehicleId) {
+      await notifyRouteEvent(pool, createdRoute, 'ROUTE_VEHICLE_ASSIGNED', actor.userId);
+    }
+    return createdRoute;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -435,6 +444,7 @@ export async function updateRoute(
       entityId: routeId,
       after: { vehicleId: input.vehicleId },
     });
+    await notifyRouteEvent(pool, updated, 'ROUTE_VEHICLE_ASSIGNED', actor.userId);
   }
   if (input.driverId && input.driverId !== current.driverId) {
     await writeAudit(pool, {
@@ -445,6 +455,7 @@ export async function updateRoute(
       entityId: routeId,
       after: { driverId: input.driverId },
     });
+    await notifyRouteEvent(pool, updated, 'ROUTE_DRIVER_ASSIGNED', actor.userId);
   }
   return updated;
 }
@@ -552,7 +563,9 @@ export async function updateRouteStatus(
       entityId: routeId,
     });
   }
-  return loadRoute(pool, actor, routeId);
+  const updatedRoute = await loadRoute(pool, actor, routeId);
+  await notifyRouteEvent(pool, updatedRoute, undefined, actor.userId);
+  return updatedRoute;
 }
 
 export async function validateDispatch(pool: Pool, actor: AuthContext, routeId: string) {
@@ -645,6 +658,7 @@ export async function dispatchRoute(
       driverId: dispatched.driverId,
     },
   });
+  await notifyRouteEvent(pool, dispatched, undefined, actor.userId);
   return dispatched;
 }
 

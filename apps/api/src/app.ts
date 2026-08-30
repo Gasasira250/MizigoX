@@ -21,6 +21,7 @@ import { trackingRouter } from './modules/tracking/tracking.routes.js';
 import { publicTrackingRouter } from './modules/tracking/public-tracking.routes.js';
 import { billingRouter, invoiceRouter, paymentRouter } from './modules/billing/billing.routes.js';
 import { billingWebhookRouter } from './modules/billing/billing.webhook.js';
+import { notificationRouter } from './modules/notifications/notification.routes.js';
 
 export function createApp() {
   const env = getEnv();
@@ -58,6 +59,7 @@ export function createApp() {
   app.use('/api/v1/billing', billingRouter);
   app.use('/api/v1/invoices', invoiceRouter);
   app.use('/api/v1/payments', paymentRouter);
+  app.use('/api/v1/notifications', notificationRouter);
   app.use('/api/v1/audit', auditRouter);
 
   app.use(notFoundHandler);

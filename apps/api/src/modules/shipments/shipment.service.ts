@@ -15,6 +15,7 @@ import {
   insertTrackingEvent,
   trackingEventTypeForShipmentStatus,
 } from '../tracking/tracking.service.js';
+import { notifyShipmentEvent } from '../notifications/notification.hooks.js';
 import type { z } from 'zod';
 import type {
   createShipmentSchema,
@@ -145,7 +146,9 @@ export async function createShipment(pool: Pool, actor: AuthContext, input: Crea
       entityId: shipmentId,
       after: { reference, status: initialStatus, customerId },
     });
-    return loadShipment(pool, actor, shipmentId);
+    const createdShipment = await loadShipment(pool, actor, shipmentId);
+    await notifyShipmentEvent(pool, createdShipment, actor.userId);
+    return createdShipment;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -624,7 +627,9 @@ export async function updateShipmentStatus(
     before: { status: current.status },
     after: { status: input.status },
   });
-  return loadShipment(pool, actor, shipmentId);
+  const updated = await loadShipment(pool, actor, shipmentId);
+  await notifyShipmentEvent(pool, updated, actor.userId);
+  return updated;
 }
 
 export async function cancelShipment(pool: Pool, actor: AuthContext, shipmentId: string) {

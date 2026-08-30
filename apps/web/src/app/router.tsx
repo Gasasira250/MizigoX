@@ -25,6 +25,9 @@ import { RouteTrackingPage } from '../features/tracking/RouteTrackingPage';
 import { ShipmentTrackingPage } from '../features/tracking/ShipmentTrackingPage';
 import { VehicleTrackingPage } from '../features/tracking/VehicleTrackingPage';
 import { InvoiceDetailPage } from '../features/billing/InvoiceDetailPage';
+import { NotificationsPage } from '../features/notifications/NotificationsPage';
+import { NotificationPreferencesPage } from '../features/notifications/NotificationPreferencesPage';
+import { NotificationDeliveriesPage } from '../features/notifications/NotificationDeliveriesPage';
 import { InvoiceFormPage } from '../features/billing/InvoiceFormPage';
 import { InvoicePrintPage } from '../features/billing/InvoicePrintPage';
 import { InvoicesPage } from '../features/billing/InvoicesPage';
@@ -139,6 +142,19 @@ export function AppRouter() {
             <Route path="new" element={<PaymentFormPage />} />
             <Route path=":paymentId" element={<PaymentDetailPage />} />
           </Route>
+          <Route path="/admin/notifications">
+            <Route
+              index
+              element={
+                <NotificationsPage
+                  basePath="/admin/notifications"
+                  preferencesPath="/admin/notifications/preferences"
+                />
+              }
+            />
+            <Route path="preferences" element={<NotificationPreferencesPage />} />
+            <Route path="deliveries" element={<NotificationDeliveriesPage />} />
+          </Route>
         </Route>
       </Route>
 
@@ -156,12 +172,38 @@ export function AppRouter() {
             <Route path=":invoiceId/print" element={<InvoicePrintPage basePath="/portal" />} />
             <Route path=":invoiceId" element={<InvoiceDetailPage basePath="/portal" />} />
           </Route>
+          <Route
+            path="/portal/notifications"
+            element={
+              <NotificationsPage
+                basePath="/portal/notifications"
+                preferencesPath="/portal/notifications/preferences"
+              />
+            }
+          />
+          <Route
+            path="/portal/notifications/preferences"
+            element={<NotificationPreferencesPage />}
+          />
         </Route>
       </Route>
 
       <Route element={<RequireAuth allow={['driver']} />}>
         <Route element={<PortalShell title="Driver portal" />}>
           <Route path="/driver" element={<DriverTrackingPage />} />
+          <Route
+            path="/driver/notifications"
+            element={
+              <NotificationsPage
+                basePath="/driver/notifications"
+                preferencesPath="/driver/notifications/preferences"
+              />
+            }
+          />
+          <Route
+            path="/driver/notifications/preferences"
+            element={<NotificationPreferencesPage />}
+          />
         </Route>
       </Route>
 

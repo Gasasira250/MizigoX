@@ -5,6 +5,7 @@ import { createOpaqueToken, hashPassword, hashToken } from '../../lib/crypto.js'
 import { conflict, forbidden, notFound, unprocessable } from '../../lib/errors.js';
 import type { AuthContext } from './auth.types.js';
 import { createSession, loadAuthContext } from './auth.service.js';
+import { notifyAccountCreated, notifyInvitation } from '../notifications/notification.hooks.js';
 
 const INVITE_TTL_DAYS = 7;
 
@@ -106,6 +107,14 @@ export async function createInvite(
     after: { email: input.email.toLowerCase(), role: input.role },
   });
 
+  await notifyInvitation(pool, {
+    organizationId,
+    organizationName: org.name,
+    email: input.email.toLowerCase(),
+    inviteId: invite.id,
+    token,
+  });
+
   return {
     id: invite.id,
     email: input.email.toLowerCase(),
@@ -187,6 +196,12 @@ export async function registerWithInvite(
       userAgent: input.userAgent,
       requestId: input.requestId,
       after: { inviteId: invite.id, role: invite.role_code },
+    });
+
+    await notifyAccountCreated(pool, {
+      userId,
+      organizationId: invite.organization_id,
+      organizationName: invite.organization_name,
     });
 
     const auth = await loadAuthContext(pool, userId);
