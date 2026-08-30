@@ -552,8 +552,8 @@ export async function loadInvoice(
     totalAmount: String(row.total_amount),
     amountPaid: String(row.amount_paid),
     amountDue: String(row.amount_due),
-    issueDate: row.issue_date ? String(row.issue_date).slice(0, 10) : null,
-    dueDate: row.due_date ? String(row.due_date).slice(0, 10) : null,
+    issueDate: toDateOnly(row.issue_date),
+    dueDate: toDateOnly(row.due_date),
     paymentTerms: row.payment_terms as PaymentTerms,
     notes: (row.notes as string | null) ?? null,
     billingAddress: (row.billing_address as string | null) ?? null,
@@ -1891,6 +1891,27 @@ async function nextPaymentNumber(client: PoolClient) {
     `UPDATE payment_reference_counters SET last_value = last_value + 1 WHERE id = 1 RETURNING last_value`,
   );
   return `MX-PAY-${String(result.rows[0]?.last_value ?? 1).padStart(6, '0')}`;
+}
+
+function toDateOnly(value: unknown): string | null {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      return null;
+    }
+    return value.toISOString().slice(0, 10);
+  }
+  const text = String(value);
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    return text.slice(0, 10);
+  }
+  const parsed = new Date(text);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString().slice(0, 10);
 }
 
 function dueDateFromTerms(issueDate: string, terms: PaymentTerms) {

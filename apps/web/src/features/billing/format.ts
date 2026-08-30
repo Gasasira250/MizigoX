@@ -16,6 +16,9 @@ export function formatDateOnly(value: string | null | undefined) {
     return '—';
   }
   const date = value.length <= 10 ? new Date(`${value}T00:00:00.000Z`) : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
   return date.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',

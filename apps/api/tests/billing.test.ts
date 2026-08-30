@@ -131,8 +131,8 @@ describe('billing invoices and payments', () => {
       .set(auth(admin));
     expect(issued.status).toBe(200);
     expect(issued.body.data.status).toBe('ISSUED');
-    expect(issued.body.data.issueDate).toBeTruthy();
-    expect(issued.body.data.dueDate).toBeTruthy();
+    expect(issued.body.data.issueDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(issued.body.data.dueDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
     const second = await request(app)
       .post('/api/v1/invoices')
@@ -256,15 +256,12 @@ describe('billing invoices and payments', () => {
       .send({ invoiceId: invoice.id, amount: '90000.00', method: 'CASH' });
     expect(overpay.status).toBe(422);
 
-    const failed = await request(app)
-      .post('/api/v1/payments')
-      .set(auth(admin))
-      .send({
-        invoiceId: invoice.id,
-        amount: '10000.00',
-        method: 'MOBILE_MONEY',
-        providerReference: 'MOMO-FAIL',
-      });
+    const failed = await request(app).post('/api/v1/payments').set(auth(admin)).send({
+      invoiceId: invoice.id,
+      amount: '10000.00',
+      method: 'MOBILE_MONEY',
+      providerReference: 'MOMO-FAIL',
+    });
     expect(failed.status).toBe(201);
     const marked = await request(app)
       .post(`/api/v1/payments/${failed.body.data.id}/fail`)
