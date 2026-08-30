@@ -7,8 +7,9 @@ export function RoutePathSummary({ path }: { path: MapPathPoint[] }) {
   }
   return (
     <p className="text-sm text-slate-600">
-      Path: {path.length} authenticated points from {formatCoordinates(path[0]!.latitude, path[0]!.longitude)}{' '}
-      to {formatCoordinates(path[path.length - 1]!.latitude, path[path.length - 1]!.longitude)}.
+      Path: {path.length} authenticated points from{' '}
+      {formatCoordinates(path[0]!.latitude, path[0]!.longitude)} to{' '}
+      {formatCoordinates(path[path.length - 1]!.latitude, path[path.length - 1]!.longitude)}.
     </p>
   );
 }

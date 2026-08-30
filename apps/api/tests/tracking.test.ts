@@ -61,17 +61,14 @@ async function createShipment(token: string, customerId: string, cargo: string) 
 }
 
 async function createVehicle(token: string, organizationId: string, plate: string) {
-  const response = await request(app)
-    .post('/api/v1/vehicles')
-    .set(auth(token))
-    .send({
-      organizationId,
-      vehicleType: 'LIGHT_TRUCK',
-      registrationNumber: plate,
-      payloadCapacity: 3500,
-      payloadUnit: 'KG',
-      status: 'AVAILABLE',
-    });
+  const response = await request(app).post('/api/v1/vehicles').set(auth(token)).send({
+    organizationId,
+    vehicleType: 'LIGHT_TRUCK',
+    registrationNumber: plate,
+    payloadCapacity: 3500,
+    payloadUnit: 'KG',
+    status: 'AVAILABLE',
+  });
   expect(response.status).toBe(201);
   return response.body.data as { id: string; reference: string };
 }
@@ -235,7 +232,11 @@ describe('real-time tracking', () => {
     const customer = await createCustomer(admin, `Reject Shipper ${stamp}`);
     const shipment = await createShipment(admin, customer.id, `Tea ${stamp}`);
     const vehicle = await createVehicle(admin, organizationId, `RAB ${String(stamp).slice(-3)} B`);
-    const otherVehicle = await createVehicle(admin, organizationId, `RAC ${String(stamp).slice(-3)} C`);
+    const otherVehicle = await createVehicle(
+      admin,
+      organizationId,
+      `RAC ${String(stamp).slice(-3)} C`,
+    );
     const driverUser = await createOrgUser({
       email: `driver.reject.${stamp}@mizigox.test`,
       password: 'Driver-Track-2026!',
@@ -262,7 +263,10 @@ describe('real-time tracking', () => {
       driverId: driver.id,
     });
     const driverToken = await login(`driver.reject.${stamp}@mizigox.test`, 'Driver-Track-2026!');
-    const otherDriverToken = await login(`driver.other.${stamp}@mizigox.test`, 'Driver-Track-2026!');
+    const otherDriverToken = await login(
+      `driver.other.${stamp}@mizigox.test`,
+      'Driver-Track-2026!',
+    );
 
     const badLat = await request(app)
       .post('/api/v1/tracking/locations')
@@ -434,7 +438,7 @@ describe('real-time tracking', () => {
     expect(afterRevoke.status).toBe(404);
 
     const otherOrg = await createOperatorOrganization(`Other Fleet ${stamp}`);
-    const otherAdmin = await createOrgUser({
+    await createOrgUser({
       email: `other.admin.${stamp}@mizigox.test`,
       password: 'Other-Admin-2026!',
       role: 'COMPANY_ADMIN',
@@ -456,7 +460,10 @@ describe('real-time tracking', () => {
       email: `customer.track.${stamp}@mizigox.test`,
       password: 'Customer-Track-2026!',
     });
-    const customerToken = await login(`customer.track.${stamp}@mizigox.test`, 'Customer-Track-2026!');
+    const customerToken = await login(
+      `customer.track.${stamp}@mizigox.test`,
+      'Customer-Track-2026!',
+    );
     const customerLive = await request(app).get('/api/v1/tracking/live').set(auth(customerToken));
     expect(customerLive.status).toBe(403);
     expect(customerUser.userId).toBeTruthy();

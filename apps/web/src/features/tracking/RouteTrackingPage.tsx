@@ -52,7 +52,10 @@ export function RouteTrackingPage() {
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <StatusBadge status={tracking.status} />
           <FreshnessBadge freshness={tracking.freshness} />
-          <Link className="text-sm text-teal-800 hover:underline" to={`/admin/routes/${tracking.routeId}`}>
+          <Link
+            className="text-sm text-teal-800 hover:underline"
+            to={`/admin/routes/${tracking.routeId}`}
+          >
             Route details
           </Link>
         </div>
@@ -94,7 +97,10 @@ export function RouteTrackingPage() {
         shipments={[]}
         path={tracking.stops
           .filter((stop) => stop.latitude != null && stop.longitude != null)
-          .map((stop) => ({ latitude: stop.latitude as number, longitude: stop.longitude as number }))}
+          .map((stop) => ({
+            latitude: stop.latitude as number,
+            longitude: stop.longitude as number,
+          }))}
         selectedId={selectedId}
         onSelect={setSelectedId}
       />
@@ -116,7 +122,9 @@ export function RouteTrackingPage() {
             </li>
           ))}
         </ol>
-        <p className="mt-4 text-xs text-slate-500">Last known update {formatDateTime(tracking.lastUpdatedAt)}.</p>
+        <p className="mt-4 text-xs text-slate-500">
+          Last known update {formatDateTime(tracking.lastUpdatedAt)}.
+        </p>
       </section>
     </div>
   );

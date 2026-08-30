@@ -30,7 +30,9 @@ export function VehicleTrackingPage() {
     void Promise.all([
       apiGet<VehiclePayload>(`/vehicles/${vehicleId}`),
       apiGet<VehicleLocationPayload | null>(`/tracking/vehicles/${vehicleId}/location`),
-      apiGetWithMeta<LocationRecordPayload[]>(`/tracking/vehicles/${vehicleId}/history?pageSize=50`),
+      apiGetWithMeta<LocationRecordPayload[]>(
+        `/tracking/vehicles/${vehicleId}/history?pageSize=50`,
+      ),
       apiGet<TrackingConfigPayload>('/tracking/config'),
     ])
       .then(([record, latest, path, trackingConfig]) => {
@@ -62,7 +64,10 @@ export function VehicleTrackingPage() {
           {location?.routeId ? (
             <>
               {' · '}
-              <Link className="text-teal-800 hover:underline" to={`/admin/tracking/routes/${location.routeId}`}>
+              <Link
+                className="text-teal-800 hover:underline"
+                to={`/admin/tracking/routes/${location.routeId}`}
+              >
                 Route tracking
               </Link>
             </>
@@ -103,7 +108,9 @@ export function VehicleTrackingPage() {
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-[#12355b]">Location history</h2>
         {history.length === 0 ? (
-          <p className="mt-3 text-sm text-slate-500">No historical locations recorded for this vehicle.</p>
+          <p className="mt-3 text-sm text-slate-500">
+            No historical locations recorded for this vehicle.
+          </p>
         ) : (
           <ol className="mt-4 space-y-2 text-sm">
             {history.map((point) => (

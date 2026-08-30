@@ -35,7 +35,13 @@ export const trackingRouter = Router();
 trackingRouter.get(
   '/config',
   authenticate,
-  requireAnyPermission('tracking.manage', 'tracking.read', 'tracking.view_live', 'tracking.submit_location', 'tracking.update_location'),
+  requireAnyPermission(
+    'tracking.manage',
+    'tracking.read',
+    'tracking.view_live',
+    'tracking.submit_location',
+    'tracking.update_location',
+  ),
   asyncHandler(async (_req, res) => {
     sendSuccess(res, getTrackingConfig());
   }),
@@ -52,7 +58,11 @@ trackingRouter.post(
     keyFn: (req) => req.auth?.userId ?? req.ip ?? 'unknown',
   }),
   asyncHandler(async (req, res) => {
-    sendSuccess(res, await submitLocation(getPool(), req.auth!, submitLocationSchema.parse(req.body)), 201);
+    sendSuccess(
+      res,
+      await submitLocation(getPool(), req.auth!, submitLocationSchema.parse(req.body)),
+      201,
+    );
   }),
 );
 
@@ -177,7 +187,10 @@ trackingRouter.get(
   authenticate,
   requireAnyPermission('tracking.manage', 'tracking.view_live'),
   asyncHandler(async (req, res) => {
-    sendSuccess(res, await getLiveDashboard(getPool(), req.auth!, liveDashboardQuerySchema.parse(req.query)));
+    sendSuccess(
+      res,
+      await getLiveDashboard(getPool(), req.auth!, liveDashboardQuerySchema.parse(req.query)),
+    );
   }),
 );
 

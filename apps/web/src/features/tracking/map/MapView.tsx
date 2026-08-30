@@ -38,7 +38,11 @@ export function MapView(props: MapRenderProps) {
       {providerReady ? (
         <LeafletCanvas {...props} points={points} fitToken={fitToken} />
       ) : (
-        <CoordinateFallback points={points} selectedId={props.selectedId} onSelect={props.onSelect} />
+        <CoordinateFallback
+          points={points}
+          selectedId={props.selectedId}
+          onSelect={props.onSelect}
+        />
       )}
     </section>
   );
