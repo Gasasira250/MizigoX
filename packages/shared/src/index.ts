@@ -6,3 +6,4 @@ export * from './permissions.js';
 export * from './reference-data.js';
 export * from './routes.js';
 export * from './shipments.js';
+export * from './tracking.js';

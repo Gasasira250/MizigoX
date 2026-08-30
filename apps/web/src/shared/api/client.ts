@@ -118,6 +118,21 @@ export function apiGet<T>(path: string) {
   return request<T>(path);
 }
 
+export async function apiGetPublic<T>(path: string) {
+  const response = await fetch(`${API_BASE}${path}`, { credentials: 'omit' });
+  const body = await parseBody(response);
+  if (!response.ok || body.error) {
+    throw new ApiError(
+      response.status,
+      body.error?.code ?? 'REQUEST_FAILED',
+      body.error?.message ?? 'Request failed',
+      body.error?.requestId,
+      body.error?.details ?? [],
+    );
+  }
+  return body.data as T;
+}
+
 export function apiPost<T>(path: string, body?: unknown) {
   return request<T>(path, {
     method: 'POST',

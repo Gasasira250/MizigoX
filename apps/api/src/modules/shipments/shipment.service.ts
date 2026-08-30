@@ -11,6 +11,10 @@ import { insertAddress, mapAddress, toNumber, type AddressInput } from '../../li
 import { writeAudit } from '../../lib/audit.js';
 import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.js';
 import type { AuthContext } from '../auth/auth.types.js';
+import {
+  insertTrackingEvent,
+  trackingEventTypeForShipmentStatus,
+} from '../tracking/tracking.service.js';
 import type { z } from 'zod';
 import type {
   createShipmentSchema,
@@ -591,6 +595,18 @@ export async function updateShipmentStatus(
       latitude: input.latitude,
       longitude: input.longitude,
     });
+    const trackingType = trackingEventTypeForShipmentStatus(input.status);
+    if (trackingType) {
+      await insertTrackingEvent(client, {
+        organizationId: current.operatorOrganizationId,
+        type: trackingType,
+        shipmentId,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
+        description: input.note ?? `Shipment ${input.status.toLowerCase().replaceAll('_', ' ')}`,
+        actorUserId: actor.userId,
+      });
+    }
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');

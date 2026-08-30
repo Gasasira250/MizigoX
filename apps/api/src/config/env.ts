@@ -59,6 +59,16 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+  TRACKING_LIVE_SECONDS: z.coerce.number().int().positive().default(60),
+  TRACKING_RECENT_SECONDS: z.coerce.number().int().positive().default(300),
+  TRACKING_STALE_SECONDS: z.coerce.number().int().positive().default(900),
+  TRACKING_MAX_FUTURE_SKEW_SECONDS: z.coerce.number().int().positive().default(300),
+  TRACKING_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(86_400),
+  TRACKING_LOCATION_RATE_MAX: z.coerce.number().int().positive().default(60),
+  TRACKING_LOCATION_RATE_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  MAP_PROVIDER: z.enum(['none', 'osm', 'mapbox', 'google']).default('osm'),
+  MAPBOX_ACCESS_TOKEN: z.string().optional(),
+  GOOGLE_MAPS_API_KEY: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

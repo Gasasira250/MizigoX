@@ -6,7 +6,8 @@ export function StatusBadge({ status }: { status: string }) {
     status === 'VALID' ||
     status === 'COMPLETED' ||
     status === 'SERVICED' ||
-    status === 'ARRIVED'
+    status === 'ARRIVED' ||
+    status === 'LIVE'
       ? 'bg-emerald-50 text-emerald-800'
       : status === 'CANCELLED' ||
           status === 'INACTIVE' ||
@@ -14,7 +15,8 @@ export function StatusBadge({ status }: { status: string }) {
           status === 'OFF_DUTY' ||
           status === 'UNAVAILABLE' ||
           status === 'DRAFT' ||
-          status === 'SKIPPED'
+          status === 'SKIPPED' ||
+          status === 'OFFLINE'
         ? 'bg-slate-100 text-slate-600'
         : status === 'EXCEPTION' ||
             status === 'DELIVERY_FAILED' ||
@@ -30,12 +32,14 @@ export function StatusBadge({ status }: { status: string }) {
                 status === 'AT_DESTINATION' ||
                 status === 'ON_TRIP' ||
                 status === 'MAINTENANCE' ||
-                status === 'DISPATCHED'
+                status === 'DISPATCHED' ||
+                status === 'STALE'
               ? 'bg-amber-50 text-amber-800'
               : status === 'ASSIGNED' ||
                   status === 'PENDING' ||
                   status === 'READY' ||
-                  status === 'PLANNED'
+                  status === 'PLANNED' ||
+                  status === 'RECENT'
                 ? 'bg-indigo-50 text-indigo-800'
                 : 'bg-sky-50 text-sky-800';
 
