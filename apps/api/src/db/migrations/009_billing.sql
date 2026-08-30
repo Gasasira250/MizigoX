@@ -174,6 +174,26 @@ CREATE TABLE IF NOT EXISTS financial_adjustments (
 CREATE INDEX IF NOT EXISTS financial_adjustments_invoice_idx
   ON financial_adjustments (invoice_id, created_at DESC);
 
+INSERT INTO currencies (code, name, decimal_places, symbol, is_active)
+VALUES ('RWF', 'Rwandan Franc', 0, 'FRw', true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO countries (
+  code, iso3, name, phone_country_code, default_timezone,
+  default_currency_code, address_schema, is_active
+)
+VALUES (
+  'RW',
+  'RWA',
+  'Rwanda',
+  '+250',
+  'Africa/Kigali',
+  'RWF',
+  '{"fields":["province","district","sector","cell","village","street","landmark"],"required":["district"]}'::jsonb,
+  true
+)
+ON CONFLICT (code) DO NOTHING;
+
 INSERT INTO tax_rates (name, code, rate_percent, country_code, currency_code, active)
 VALUES ('Rwanda VAT', 'RW-VAT', 18.00, 'RW', 'RWF', true)
 ON CONFLICT (country_code, code) DO NOTHING;
