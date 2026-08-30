@@ -9,9 +9,12 @@ import {
   canViewLiveTracking,
   canReadInvoices,
   canReadPayments,
+  canReadNotificationDelivery,
+  canReadNotifications,
 } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
+import { NotificationBell } from '../../features/notifications/NotificationBell';
 
 export function AdminShell() {
   const { user, logout } = useAuth();
@@ -25,6 +28,8 @@ export function AdminShell() {
   const canLive = canViewLiveTracking(user?.permissions);
   const canInvoices = canReadInvoices(user?.permissions);
   const canPayments = canReadPayments(user?.permissions);
+  const canNotifications = canReadNotifications(user?.permissions);
+  const canDeliveries = canReadNotificationDelivery(user?.permissions);
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
@@ -34,6 +39,7 @@ export function AdminShell() {
           <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Freight & Logistics</p>
         </div>
         <div className="flex items-center gap-4 text-sm">
+          {canNotifications ? <NotificationBell historyPath="/admin/notifications" /> : null}
           <div className="text-right">
             <p className="font-medium">
               {user?.firstName} {user?.lastName}
@@ -162,6 +168,26 @@ export function AdminShell() {
                 }
               >
                 Payments
+              </NavLink>
+            ) : null}
+            {canNotifications ? (
+              <NavLink
+                to="/admin/notifications"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Notifications
+              </NavLink>
+            ) : null}
+            {canDeliveries ? (
+              <NavLink
+                to="/admin/notifications/deliveries"
+                className={({ isActive }) =>
+                  `rounded-md px-3 py-2 text-sm font-medium ${isActive ? 'bg-[#12355b] text-white' : 'text-slate-700 hover:bg-slate-100'}`
+                }
+              >
+                Delivery log
               </NavLink>
             ) : null}
           </nav>

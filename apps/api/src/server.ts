@@ -3,6 +3,7 @@ import { getEnv } from './config/env.js';
 import { runMigrations } from './db/migrate.js';
 import { closePool, getPool } from './db/pool.js';
 import { runSeed } from './db/seed.js';
+import { startNotificationWorker } from './modules/notifications/notification.worker.js';
 
 async function bootstrap() {
   const env = getEnv();
@@ -14,11 +15,13 @@ async function bootstrap() {
   }
 
   const app = createApp();
+  const stopNotificationWorker = startNotificationWorker(pool);
   const server = app.listen(env.API_PORT, env.API_HOST, () => {
     console.log(`MizigoX API listening on http://${env.API_HOST}:${env.API_PORT}`);
   });
 
   const shutdown = async () => {
+    stopNotificationWorker();
     server.close();
     await closePool();
     process.exit(0);

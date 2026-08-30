@@ -23,6 +23,7 @@ import { getEnv } from '../../config/env.js';
 import type { Pool, PoolClient } from 'pg';
 import type { AuthContext } from '../auth/auth.types.js';
 import { applyOperatorFilter, assertOperatorAccess } from '../fleet/tenant.js';
+import { emitNotification } from '../notifications/notify.js';
 import { publishVehicleLocation } from './tracking.hub.js';
 import type { z } from 'zod';
 import type {
@@ -826,10 +827,15 @@ export async function issueShipmentTrackingToken(
   const shipment = await pool.query<{
     operator_organization_id: string;
     customer_organization_id: string;
+    reference: string;
+    customer_name: string;
   }>(
     `
-      SELECT operator_organization_id, customer_organization_id
-      FROM shipments WHERE id = $1 AND deleted_at IS NULL
+      SELECT s.operator_organization_id, s.customer_organization_id, s.reference,
+             c.name AS customer_name
+      FROM shipments s
+      JOIN organizations c ON c.id = s.customer_organization_id
+      WHERE s.id = $1 AND s.deleted_at IS NULL
     `,
     [shipmentId],
   );
@@ -859,6 +865,20 @@ export async function issueShipmentTrackingToken(
     entityType: 'shipment',
     entityId: shipmentId,
     after: { tokenHint: hint },
+  });
+  await emitNotification(pool, {
+    type: 'TRACKING_STARTED',
+    organizationId: shipment.rows[0].operator_organization_id,
+    operatorOrganizationId: shipment.rows[0].operator_organization_id,
+    customerOrganizationId: shipment.rows[0].customer_organization_id,
+    relatedEntityType: 'shipment',
+    relatedEntityId: shipmentId,
+    relatedReference: shipment.rows[0].reference,
+    actorUserId: actor.userId,
+    variables: {
+      shipment_reference: shipment.rows[0].reference,
+      customer_name: shipment.rows[0].customer_name,
+    },
   });
   return {
     shipmentId,

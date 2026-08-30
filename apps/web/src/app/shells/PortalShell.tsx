@@ -1,9 +1,11 @@
-import { canReadInvoices } from '@mizigox/shared';
+import { canReadInvoices, canReadNotifications } from '@mizigox/shared';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../shared/auth/AuthProvider';
+import { NotificationBell } from '../../features/notifications/NotificationBell';
 
 export function PortalShell({ title }: { title: string }) {
   const { user, logout } = useAuth();
+  const historyPath = title === 'Driver portal' ? '/driver/notifications' : '/portal/notifications';
 
   return (
     <div className="min-h-screen bg-[#f4f7fb]">
@@ -23,12 +25,27 @@ export function PortalShell({ title }: { title: string }) {
                   Invoices
                 </NavLink>
               ) : null}
+              {canReadNotifications(user?.permissions) ? (
+                <NavLink className="text-slate-700 hover:underline" to="/portal/notifications">
+                  Notifications
+                </NavLink>
+              ) : null}
             </>
           ) : null}
           {title === 'Driver portal' ? (
-            <NavLink className="text-slate-700 hover:underline" to="/driver">
-              Tracking
-            </NavLink>
+            <>
+              <NavLink className="text-slate-700 hover:underline" to="/driver">
+                Tracking
+              </NavLink>
+              {canReadNotifications(user?.permissions) ? (
+                <NavLink className="text-slate-700 hover:underline" to="/driver/notifications">
+                  Notifications
+                </NavLink>
+              ) : null}
+            </>
+          ) : null}
+          {canReadNotifications(user?.permissions) ? (
+            <NotificationBell historyPath={historyPath} />
           ) : null}
           <span className="text-slate-600">
             {user?.firstName} {user?.lastName}

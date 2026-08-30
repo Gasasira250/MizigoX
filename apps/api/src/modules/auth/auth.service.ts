@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import type { Pool } from 'pg';
 import { getEnv } from '../../config/env.js';
 import { writeAudit } from '../../lib/audit.js';
+import { notifyPasswordChanged } from '../notifications/notification.hooks.js';
 import { createOpaqueToken, hashToken, hashPassword, verifyPassword } from '../../lib/crypto.js';
 import { forbidden, unauthorized } from '../../lib/errors.js';
 import type { AccessTokenClaims, AuthContext } from './auth.types.js';
@@ -303,6 +304,22 @@ export async function changePassword(
     entityId: input.userId,
     requestId: input.requestId,
   });
+  const membership = await pool.query<{ organization_id: string }>(
+    `
+      SELECT organization_id
+      FROM organization_memberships
+      WHERE user_id = $1 AND status = 'ACTIVE'
+      ORDER BY created_at
+      LIMIT 1
+    `,
+    [input.userId],
+  );
+  if (membership.rows[0]) {
+    await notifyPasswordChanged(pool, {
+      userId: input.userId,
+      organizationId: membership.rows[0].organization_id,
+    });
+  }
 }
 
 async function issueRefreshToken(

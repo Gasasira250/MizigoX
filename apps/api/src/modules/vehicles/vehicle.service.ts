@@ -20,6 +20,7 @@ import {
   normalizeRegistration,
   resolveOperatorOrganizationId,
 } from '../fleet/tenant.js';
+import { emitNotification } from '../notifications/notify.js';
 import type { z } from 'zod';
 import type {
   createVehicleSchema,
@@ -403,7 +404,23 @@ export async function updateVehicleStatus(
     before: { status: current.status, availability: current.availability },
     after: { status: input.status, availability, note: input.note ?? null },
   });
-  return loadVehicle(pool, actor, vehicleId);
+  const updated = await loadVehicle(pool, actor, vehicleId);
+  if (updated.availability === 'UNAVAILABLE') {
+    await emitNotification(pool, {
+      type: 'VEHICLE_UNAVAILABLE',
+      organizationId: updated.organizationId,
+      operatorOrganizationId: updated.organizationId,
+      relatedEntityType: 'vehicle',
+      relatedEntityId: updated.id,
+      relatedReference: updated.registrationNumber,
+      actorUserId: actor.userId,
+      variables: {
+        vehicle_registration: updated.registrationNumber,
+        organization_name: updated.organizationName,
+      },
+    });
+  }
+  return updated;
 }
 
 export async function archiveVehicle(pool: Pool, actor: AuthContext, vehicleId: string) {

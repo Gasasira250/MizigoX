@@ -16,6 +16,8 @@ import {
 } from '@mizigox/shared';
 import type { Pool, PoolClient } from 'pg';
 import { writeAudit } from '../../lib/audit.js';
+import { notifyInvoiceEvent, notifyPaymentEvent } from '../notifications/notification.hooks.js';
+import { emitNotification } from '../notifications/notify.js';
 import { AppError, forbidden, notFound, unprocessable } from '../../lib/errors.js';
 import {
   addMoney,
@@ -403,7 +405,12 @@ export async function createInvoice(pool: Pool, actor: AuthContext, input: Creat
       entityId: invoiceId,
       after: { number, customerId: customer.id, issued: Boolean(input.issue) },
     });
-    return loadInvoice(pool, actor, invoiceId);
+    const createdInvoice = await loadInvoice(pool, actor, invoiceId);
+    await notifyInvoiceEvent(pool, createdInvoice, 'INVOICE_CREATED', actor.userId);
+    if (input.issue) {
+      await notifyInvoiceEvent(pool, createdInvoice, 'INVOICE_ISSUED', actor.userId);
+    }
+    return createdInvoice;
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;
@@ -776,7 +783,9 @@ export async function issueInvoice(pool: Pool, actor: AuthContext, invoiceId: st
     before: { status: current.status },
     after: { status: 'ISSUED' },
   });
-  return loadInvoice(pool, actor, invoiceId);
+  const issued = await loadInvoice(pool, actor, invoiceId);
+  await notifyInvoiceEvent(pool, issued, 'INVOICE_ISSUED', actor.userId);
+  return issued;
 }
 
 export async function cancelInvoice(
@@ -941,7 +950,13 @@ export async function confirmPayment(
     before: { status: payment.status },
     after: { status: 'SUCCESSFUL', providerTransactionId: input.providerTransactionId ?? null },
   });
-  return loadPayment(pool, actor, paymentId);
+  const confirmed = await loadPayment(pool, actor, paymentId);
+  await notifyPaymentEvent(pool, confirmed, 'PAYMENT_RECEIVED', actor.userId);
+  const paidInvoice = await loadInvoice(pool, actor, confirmed.invoiceId);
+  if (paidInvoice.status === 'PAID') {
+    await notifyInvoiceEvent(pool, paidInvoice, 'INVOICE_PAID', actor.userId);
+  }
+  return confirmed;
 }
 
 export async function applyProviderWebhook(
@@ -1006,7 +1021,33 @@ export async function applyProviderWebhook(
     before: { status: row.status },
     after: { status: payload.status, provider, eventId: payload.eventId },
   });
-  return loadPaymentAsSystem(pool, row.id);
+  const payment = await loadPaymentAsSystem(pool, row.id);
+  if (payload.status === 'SUCCESSFUL') {
+    await notifyPaymentEvent(pool, payment, 'PAYMENT_RECEIVED');
+    const paid = await pool.query<{ status: string }>(`SELECT status FROM invoices WHERE id = $1`, [
+      payment.invoiceId,
+    ]);
+    if (paid.rows[0]?.status === 'PAID') {
+      await emitNotification(pool, {
+        type: 'INVOICE_PAID',
+        organizationId: payment.organizationId,
+        operatorOrganizationId: payment.organizationId,
+        customerOrganizationId: payment.customerOrganizationId,
+        relatedEntityType: 'invoice',
+        relatedEntityId: payment.invoiceId,
+        relatedReference: payment.invoiceNumber,
+        variables: {
+          invoice_number: payment.invoiceNumber,
+          customer_name: payment.customerName,
+          amount: payment.amount,
+          currency: payment.currencyCode,
+        },
+      });
+    }
+  } else if (payload.status === 'FAILED') {
+    await notifyPaymentEvent(pool, payment, 'PAYMENT_FAILED');
+  }
+  return payment;
 }
 
 export async function failPayment(pool: Pool, actor: AuthContext, paymentId: string) {
@@ -1026,7 +1067,9 @@ export async function failPayment(pool: Pool, actor: AuthContext, paymentId: str
     before: { status: payment.status },
     after: { status: 'FAILED' },
   });
-  return loadPayment(pool, actor, paymentId);
+  const failed = await loadPayment(pool, actor, paymentId);
+  await notifyPaymentEvent(pool, failed, 'PAYMENT_FAILED', actor.userId);
+  return failed;
 }
 
 export async function cancelPayment(pool: Pool, actor: AuthContext, paymentId: string) {
@@ -1786,30 +1829,80 @@ async function markIssued(
 }
 
 async function markOverdue(pool: Pool, invoiceId?: string) {
-  if (invoiceId) {
-    await pool.query(
-      `
-        UPDATE invoices
-        SET status = 'OVERDUE', updated_at = now()
-        WHERE id = $1
-          AND status IN ('ISSUED', 'PARTIALLY_PAID')
-          AND due_date IS NOT NULL
-          AND due_date < CURRENT_DATE
-      `,
-      [invoiceId],
-    );
-    return;
+  const updated = invoiceId
+    ? await pool.query<{
+        id: string;
+        number: string;
+        organization_id: string;
+        customer_organization_id: string;
+        total_amount: string;
+        currency_code: string;
+        due_date: Date | null;
+        customer_name: string;
+        organization_name: string;
+      }>(
+        `
+          UPDATE invoices i
+          SET status = 'OVERDUE', updated_at = now()
+          FROM organizations c, organizations o
+          WHERE i.id = $1
+            AND c.id = i.customer_organization_id
+            AND o.id = i.organization_id
+            AND i.status IN ('ISSUED', 'PARTIALLY_PAID')
+            AND i.due_date IS NOT NULL
+            AND i.due_date < CURRENT_DATE
+          RETURNING i.id, i.number, i.organization_id, i.customer_organization_id,
+                    i.total_amount::text, i.currency_code, i.due_date,
+                    c.name AS customer_name, o.name AS organization_name
+        `,
+        [invoiceId],
+      )
+    : await pool.query<{
+        id: string;
+        number: string;
+        organization_id: string;
+        customer_organization_id: string;
+        total_amount: string;
+        currency_code: string;
+        due_date: Date | null;
+        customer_name: string;
+        organization_name: string;
+      }>(
+        `
+          UPDATE invoices i
+          SET status = 'OVERDUE', updated_at = now()
+          FROM organizations c, organizations o
+          WHERE c.id = i.customer_organization_id
+            AND o.id = i.organization_id
+            AND i.status IN ('ISSUED', 'PARTIALLY_PAID')
+            AND i.due_date IS NOT NULL
+            AND i.due_date < CURRENT_DATE
+            AND i.deleted_at IS NULL
+          RETURNING i.id, i.number, i.organization_id, i.customer_organization_id,
+                    i.total_amount::text, i.currency_code, i.due_date,
+                    c.name AS customer_name, o.name AS organization_name
+        `,
+      );
+  for (const row of updated.rows) {
+    await emitNotification(pool, {
+      type: 'INVOICE_OVERDUE',
+      organizationId: row.organization_id,
+      operatorOrganizationId: row.organization_id,
+      customerOrganizationId: row.customer_organization_id,
+      relatedEntityType: 'invoice',
+      relatedEntityId: row.id,
+      relatedReference: row.number,
+      idempotencySuffix: row.due_date ? row.due_date.toISOString().slice(0, 10) : 'overdue',
+      variables: {
+        invoice_number: row.number,
+        customer_name: row.customer_name,
+        amount: row.total_amount,
+        currency: row.currency_code,
+        due_date: row.due_date ? row.due_date.toISOString().slice(0, 10) : '',
+        organization_name: row.organization_name,
+      },
+    });
   }
-  await pool.query(
-    `
-      UPDATE invoices
-      SET status = 'OVERDUE', updated_at = now()
-      WHERE status IN ('ISSUED', 'PARTIALLY_PAID')
-        AND due_date IS NOT NULL
-        AND due_date < CURRENT_DATE
-        AND deleted_at IS NULL
-    `,
-  );
 }
 
 async function attachShipment(
