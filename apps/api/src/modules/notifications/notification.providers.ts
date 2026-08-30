@@ -1,4 +1,5 @@
 import { getEnv } from '../../config/env.js';
+import { logger } from '../../lib/logger.js';
 import { unprocessable } from '../../lib/errors.js';
 import type {
   EmailMessage,
@@ -25,10 +26,9 @@ export interface PushProvider {
 class LogEmailProvider implements EmailProvider {
   name = 'log';
   async send(message: EmailMessage): Promise<ProviderResult> {
-    console.info('[notifications:email:log]', {
+    logger.info('Email delivery logged (no live provider)', {
       to: message.to,
       subject: message.subject,
-      text: message.text,
     });
     return { provider: this.name, providerMessageId: `log-email-${Date.now()}` };
   }
@@ -37,7 +37,7 @@ class LogEmailProvider implements EmailProvider {
 class LogSmsProvider implements SmsProvider {
   name = 'log';
   async send(message: SmsMessage): Promise<ProviderResult> {
-    console.info('[notifications:sms:log]', { to: message.to, body: message.body });
+    logger.info('SMS delivery logged (no live provider)', { to: message.to });
     return { provider: this.name, providerMessageId: `log-sms-${Date.now()}` };
   }
 }
@@ -227,7 +227,7 @@ export function resolvePushProvider(): PushProvider {
     return {
       name: 'log',
       async send(message) {
-        console.info('[notifications:push:log]', {
+        logger.info('Push delivery logged (no live provider)', {
           tokenHint: message.token.slice(-6),
           title: message.title,
         });

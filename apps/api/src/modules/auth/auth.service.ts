@@ -3,6 +3,7 @@ import type { SessionUser } from '@mizigox/shared';
 import jwt from 'jsonwebtoken';
 import type { Pool } from 'pg';
 import { getEnv } from '../../config/env.js';
+import { logger } from '../../lib/logger.js';
 import { writeAudit } from '../../lib/audit.js';
 import { notifyPasswordChanged } from '../notifications/notification.hooks.js';
 import { createOpaqueToken, hashToken, hashPassword, verifyPassword } from '../../lib/crypto.js';
@@ -105,6 +106,7 @@ export async function login(
       requestId: input.requestId,
       after: { reason: 'unknown_user' },
     });
+    logger.warn('Authentication failure', { reason: 'unknown_user', requestId: input.requestId });
     throw unauthorized('Invalid email or password');
   }
 
@@ -137,6 +139,10 @@ export async function login(
       userAgent: input.userAgent,
       requestId: input.requestId,
       after: { reason: 'invalid_password', failedCount },
+    });
+    logger.warn('Authentication failure', {
+      reason: 'invalid_password',
+      requestId: input.requestId,
     });
     throw unauthorized('Invalid email or password');
   }

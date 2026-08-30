@@ -322,15 +322,15 @@ export function VehicleDetailPage() {
           <article className="rounded-xl border border-dashed border-slate-300 bg-white p-5">
             <h2 className="text-sm font-semibold text-[#12355b]">Current assigned driver</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Driver assignment will connect Shipment → Route → Vehicle → Driver in Phase 7. This
-              vehicle is not assigned.
+              Driver assignment is managed on dispatched routes. Open Dispatch or the vehicle&apos;s
+              active route to see who is assigned. No sample assignments are shown.
             </p>
           </article>
           <article className="rounded-xl border border-dashed border-slate-300 bg-white p-5">
             <h2 className="text-sm font-semibold text-[#12355b]">Driver history</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Assignment history will appear here after dispatch is implemented. No placeholder
-              assignments are recorded.
+              Route activity for this vehicle is recorded on trips and in audit logs. No placeholder
+              history is stored here.
             </p>
           </article>
         </section>

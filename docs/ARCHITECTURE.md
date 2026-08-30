@@ -1,11 +1,12 @@
 # MizigoX System Architecture
 
-**Status:** Phases 1–2 complete. Phase 3 implements customers and shipments. Transport, billing, and tracking still wait for later approval.  
+**Current status (Phase 12):** The monorepo is a working logistics platform: identity, RBAC, customers, shipments, fleet, routes, dispatch, tracking, invoices, payments (manual + webhook-ready), notifications, portals, and proof of delivery. Production hardening is in place (env separation, headers, rate limits, password reset, CI). External production accounts (database hosting, DNS, email, live payments, object storage, monitoring) are **not** configured by this repository.
+
+**Historical note:** Sections below describe the original build plan. Treat “current state is a Vite starter” as history. For running the app, use the root README and `docs/DEPLOYMENT.md`.
+
 **Audience:** Product owner, engineering  
 **First market:** Rwanda  
 **Later markets:** Uganda, Kenya, Tanzania, Burundi, South Sudan, DRC
-
-This document is the source of truth for how MizigoX will be built. It is an architecture and implementation plan, not working application code.
 
 ---
 

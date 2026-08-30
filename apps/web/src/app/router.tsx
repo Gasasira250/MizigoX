@@ -1,6 +1,8 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
+import { ForgotPasswordPage } from '../features/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '../features/auth/ResetPasswordPage';
 import { CustomerDetailPage } from '../features/customers/CustomerDetailPage';
 import { CustomerFormPage } from '../features/customers/CustomerFormPage';
 import { CustomerProfilePage } from '../features/customers/CustomerProfilePage';
@@ -110,8 +112,10 @@ export function AppRouter() {
     <Routes>
       <Route element={<GuestOnly />}>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route element={<RequireAuth allow={['admin']} />}>
         <Route element={<AppShell />}>

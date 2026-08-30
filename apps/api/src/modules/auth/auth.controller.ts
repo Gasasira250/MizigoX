@@ -5,9 +5,12 @@ import { sendSuccess } from '../../lib/http.js';
 import {
   changePasswordSchema,
   createInviteSchema,
+  forgotPasswordSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
 } from './auth.schemas.js';
+import { completePasswordReset, requestPasswordReset } from './password-reset.service.js';
 import {
   changePassword,
   loadAuthContext,
@@ -30,7 +33,7 @@ function cookieOptions() {
   return {
     httpOnly: true,
     secure: env.COOKIE_SECURE,
-    sameSite: 'lax' as const,
+    sameSite: env.COOKIE_SAMESITE,
     path: '/api/v1/auth',
     maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
   };
@@ -128,4 +131,21 @@ export async function invitePreviewHandler(req: Request, res: Response) {
   const token = String(req.params.token ?? '');
   const preview = await getInvitePreview(getPool(), token);
   sendSuccess(res, preview);
+}
+
+export async function forgotPasswordHandler(req: Request, res: Response) {
+  const body = forgotPasswordSchema.parse(req.body);
+  await requestPasswordReset(getPool(), { ...body, ...clientMeta(req) });
+  sendSuccess(res, { accepted: true });
+}
+
+export async function resetPasswordHandler(req: Request, res: Response) {
+  const body = resetPasswordSchema.parse(req.body);
+  await completePasswordReset(getPool(), {
+    token: body.token,
+    newPassword: body.newPassword,
+    ...clientMeta(req),
+  });
+  res.clearCookie(refreshCookieName(), { ...cookieOptions(), maxAge: 0 });
+  sendSuccess(res, { success: true });
 }

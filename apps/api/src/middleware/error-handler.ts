@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
-import { getEnv } from '../config/env.js';
+import { getEnv, isProductionLike } from '../config/env.js';
 import { AppError } from '../lib/errors.js';
+import { logger } from '../lib/logger.js';
 
 export function errorHandler(error: unknown, req: Request, res: Response, _next: NextFunction) {
   if (error instanceof ZodError) {
@@ -26,15 +27,19 @@ export function errorHandler(error: unknown, req: Request, res: Response, _next:
     });
   }
 
-  const isProduction = getEnv().NODE_ENV === 'production';
-  const fallback = error instanceof Error ? error.message : 'Unexpected error';
-
-  console.error({ requestId: req.requestId, error });
+  const production = isProductionLike(getEnv());
+  logger.error('Unhandled API error', {
+    requestId: req.requestId,
+    method: req.method,
+    path: req.path,
+    name: error instanceof Error ? error.name : 'unknown',
+    message: production ? 'hidden' : error instanceof Error ? error.message : 'Unexpected error',
+  });
 
   return res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      message: isProduction ? 'An unexpected error occurred' : fallback,
+      message: production ? 'An unexpected error occurred' : 'An unexpected error occurred',
       details: [],
       requestId: req.requestId,
     },
