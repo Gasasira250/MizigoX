@@ -1,9 +1,16 @@
+import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Pool } from 'pg';
 
-const migrationsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'migrations');
+function resolveMigrationsDir() {
+  const besideModule = path.join(path.dirname(fileURLToPath(import.meta.url)), 'migrations');
+  if (existsSync(besideModule)) {
+    return besideModule;
+  }
+  return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../src/db/migrations');
+}
 
 export async function runMigrations(pool: Pool) {
   await pool.query(`
@@ -13,7 +20,7 @@ export async function runMigrations(pool: Pool) {
     )
   `);
 
-  const files = (await readdir(migrationsDir))
+  const files = (await readdir(resolveMigrationsDir()))
     .filter((file) => file.endsWith('.sql'))
     .sort((a, b) => a.localeCompare(b));
 
@@ -23,7 +30,7 @@ export async function runMigrations(pool: Pool) {
       continue;
     }
 
-    const sql = await readFile(path.join(migrationsDir, file), 'utf8');
+    const sql = await readFile(path.join(resolveMigrationsDir(), file), 'utf8');
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
