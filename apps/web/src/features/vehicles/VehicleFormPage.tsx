@@ -76,7 +76,9 @@ export function VehicleFormPage() {
         setForm((current) => ({
           ...current,
           vehicleType: current.vehicleType || typeRows[0]?.code || 'OTHER',
-          organizationId: current.organizationId || operatorRows[0]?.id || '',
+          organizationId:
+            current.organizationId ||
+            (operatorRows.length === 1 ? operatorRows[0]?.id || '' : current.organizationId),
         }));
         if (isEdit && vehicleId) {
           const vehicle = await apiGet<VehiclePayload>(`/vehicles/${vehicleId}`);
@@ -178,7 +180,9 @@ export function VehicleFormPage() {
                 className={inputClass}
                 value={form.organizationId}
                 onChange={(event) => update('organizationId', event.target.value)}
+                required
               >
+                <option value="">Select transporter</option>
                 {operators.map((org) => (
                   <option key={org.id} value={org.id}>
                     {org.name}

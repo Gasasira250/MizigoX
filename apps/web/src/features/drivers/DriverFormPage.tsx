@@ -66,7 +66,11 @@ export function DriverFormPage() {
         const operatorRows = isPlatform ? await apiGet<OperatorOption[]>('/fleet/operators') : [];
         if (cancelled) return;
         setOperators(operatorRows);
-        const organizationId = isPlatform ? operatorRows[0]?.id || '' : user?.organization.id || '';
+        const organizationId = isPlatform
+          ? operatorRows.length === 1
+            ? operatorRows[0]?.id || ''
+            : ''
+          : user?.organization.id || '';
         setForm((current) => ({
           ...current,
           organizationId: current.organizationId || organizationId,
@@ -79,7 +83,7 @@ export function DriverFormPage() {
             setLinkedUserLabel(driver.userEmail ?? driver.userId);
           }
           await loadLinkable(driver.organizationId);
-        } else {
+        } else if (organizationId) {
           await loadLinkable(organizationId);
         }
       } catch (cause) {
@@ -193,7 +197,9 @@ export function DriverFormPage() {
                 className={inputClass}
                 value={form.organizationId}
                 onChange={(event) => void onOrganizationChange(event.target.value)}
+                required
               >
+                <option value="">Select transporter</option>
                 {operators.map((org) => (
                   <option key={org.id} value={org.id}>
                     {org.name}
