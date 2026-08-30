@@ -49,11 +49,24 @@ export function getAccessToken() {
   return accessToken;
 }
 
-async function parseBody(response: Response) {
-  return (await response.json()) as {
-    data?: unknown;
-    meta?: { requestId?: string; page?: number; pageSize?: number; total?: number };
-  } & Partial<ApiErrorBody>;
+type ParsedBody = {
+  data?: unknown;
+  meta?: { requestId?: string; page?: number; pageSize?: number; total?: number };
+} & Partial<ApiErrorBody>;
+
+async function parseBody(response: Response): Promise<ParsedBody> {
+  try {
+    return (await response.json()) as ParsedBody;
+  } catch {
+    return {
+      error: {
+        code: 'REQUEST_FAILED',
+        message: 'Request failed',
+        details: [],
+        requestId: '',
+      },
+    };
+  }
 }
 
 async function fetchApi(path: string, init: RequestInit) {
@@ -91,9 +104,7 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
     unauthorizedHandler?.();
   }
 
-  const body = await parseBody(response).catch(() => ({
-    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
-  }));
+  const body = await parseBody(response);
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,
@@ -107,7 +118,10 @@ async function request<T>(path: string, init: RequestInit = {}, allowRefresh = t
   return body.data as T;
 }
 
-export async function apiGetWithMeta<T>(path: string) {
+export async function apiGetWithMeta<T>(path: string): Promise<{
+  data: T;
+  meta: { requestId?: string; page?: number; pageSize?: number; total?: number };
+}> {
   const headers = new Headers();
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
@@ -119,11 +133,7 @@ export async function apiGetWithMeta<T>(path: string) {
       return apiGetWithMeta<T>(path);
     }
   }
-  const body = await parseBody(response).catch(() => ({
-    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
-    data: undefined,
-    meta: {},
-  }));
+  const body = await parseBody(response);
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,
@@ -145,9 +155,7 @@ export function apiGet<T>(path: string) {
 
 export async function apiGetPublic<T>(path: string) {
   const response = await fetchApi(path, { credentials: 'omit' });
-  const body = await parseBody(response).catch(() => ({
-    error: { code: 'REQUEST_FAILED', message: 'Request failed', details: [], requestId: '' },
-  }));
+  const body = await parseBody(response);
   if (!response.ok || body.error) {
     throw new ApiError(
       response.status,
