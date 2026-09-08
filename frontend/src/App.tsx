@@ -12,7 +12,7 @@ import type { ReactNode } from 'react'
 
 function Guard({ children }: { children: ReactNode }) {
   const { user, ready } = useAuth()
-  if (!ready) return <p className="boot">Loading Mizigox…</p>
+  if (!ready) return <p className="boot">Loading MizigoX…</p>
   if (!user) return <Navigate to="/login" replace />
   return children
 }
@@ -20,7 +20,7 @@ function Guard({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route

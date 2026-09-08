@@ -6,6 +6,7 @@ from app.auth import hash_password
 from app.models import Customer, Document, Driver, Load, LoadEvent, Trailer, Truck, User
 
 DEMO = {
+    "dispatcher": ("dispatcher@mizigox.com", "dispatcher", "Jordan Hale"),
     "customer": ("cargo@mizigox.com", "cargo", "Amina Diallo"),
     "driver": ("driver@mizigox.com", "driver", "Marcus Webb"),
     "partner": ("partner@mizigox.com", "partner", "Alex Rivera"),
@@ -66,6 +67,13 @@ def seed_if_empty(db: Session) -> None:
 
     db.add_all(
         [
+            User(
+                email=DEMO["dispatcher"][0],
+                hashed_password=hash_password(DEMO["dispatcher"][1]),
+                name=DEMO["dispatcher"][2],
+                phone="555-300-0100",
+                role="dispatcher",
+            ),
             User(
                 email=DEMO["customer"][0],
                 hashed_password=hash_password(DEMO["customer"][1]),

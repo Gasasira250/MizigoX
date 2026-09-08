@@ -11,6 +11,11 @@ const links = [
 
 export default function Layout() {
   const { user, signOut } = useAuth()
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
 
   return (
     <div className="app-shell">
@@ -18,8 +23,7 @@ export default function Layout() {
         <div className="brand">
           <span className="brand-mark">MX</span>
           <div>
-            <strong>Mizigox</strong>
-            <span>Carrier TMS</span>
+            <strong>MizigoX</strong>
           </div>
         </div>
         <nav>
@@ -39,9 +43,15 @@ export default function Layout() {
           </button>
         </div>
       </aside>
-      <main className="content">
-        <Outlet />
-      </main>
+      <div className="app-main">
+        <header className="topbar">
+          <span className="topbar-date">{today}</span>
+          <span className="topbar-user-mobile">{user?.name}</span>
+        </header>
+        <main className="content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   )
 }

@@ -30,8 +30,7 @@ export default function Login() {
         <div className="brand">
           <span className="brand-mark">MX</span>
           <div>
-            <strong>Mizigox</strong>
-            <span>Carrier TMS</span>
+            <strong>MizigoX</strong>
           </div>
         </div>
         <h1>Sign in</h1>
