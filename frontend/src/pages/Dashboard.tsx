@@ -17,13 +17,13 @@ export default function DashboardPage() {
   if (!data) return <p className="muted">Loading dashboard…</p>
 
   const cards = [
-    { label: 'In transit', value: data.loads_in_transit },
-    { label: 'Unassigned booked', value: data.loads_booked },
-    { label: 'Pickups today', value: data.pickups_today },
-    { label: 'Deliveries today', value: data.deliveries_today },
-    { label: 'Trucks available', value: data.trucks_available },
-    { label: 'Trucks on load', value: data.trucks_on_load },
-    { label: 'Drivers available', value: data.drivers_available },
+    { label: 'In transit', value: data.loads_in_transit, tone: 'info' },
+    { label: 'Unassigned booked', value: data.loads_booked, tone: 'warn' },
+    { label: 'Pickups today', value: data.pickups_today, tone: 'info' },
+    { label: 'Deliveries today', value: data.deliveries_today, tone: 'ok' },
+    { label: 'Trucks available', value: data.trucks_available, tone: 'ok' },
+    { label: 'Trucks on load', value: data.trucks_on_load, tone: 'warn' },
+    { label: 'Drivers available', value: data.drivers_available, tone: 'ok' },
   ]
 
   return (
@@ -31,7 +31,7 @@ export default function DashboardPage() {
       <header className="page-head">
         <div>
           <h1>Operations</h1>
-          <p className="muted">Today’s board for Mizigox fleet dispatch.</p>
+          <p className="muted">Today’s dispatch board.</p>
         </div>
         <Link to="/loads?new=1" className="btn">
           New load
@@ -39,7 +39,7 @@ export default function DashboardPage() {
       </header>
       <section className="kpi-grid">
         {cards.map((card) => (
-          <article key={card.label} className="kpi">
+          <article key={card.label} className={`kpi kpi-${card.tone}`}>
             <span>{card.label}</span>
             <strong>{card.value}</strong>
           </article>
