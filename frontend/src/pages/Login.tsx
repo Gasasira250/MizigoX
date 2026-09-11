@@ -35,7 +35,12 @@ export default function Login() {
       if (remember) localStorage.setItem(REMEMBER_KEY, email)
       else localStorage.removeItem(REMEMBER_KEY)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed')
+      const msg = err instanceof Error ? err.message : 'Sign in failed'
+      setError(
+        /failed to fetch|networkerror|load failed/i.test(msg)
+          ? 'Cannot reach the MizigoX API at http://127.0.0.1:8000. Start the backend and open the local app to sign in.'
+          : msg,
+      )
     } finally {
       setBusy(false)
     }
@@ -143,6 +148,12 @@ export default function Login() {
             </button>
           </div>
 
+          {typeof window !== 'undefined' && window.location.hostname.endsWith('github.io') ? (
+            <p className="hint">
+              This public page is the interface only. Sign-in needs the MizigoX API on this computer
+              (`http://127.0.0.1:8000`). Use the local app at <code>http://localhost:5173/MizigoX/</code>.
+            </p>
+          ) : null}
           {error ? (
             <p className="error" role="alert">
               {error}
