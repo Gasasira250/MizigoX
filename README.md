@@ -32,6 +32,20 @@ Open http://localhost:5173/MizigoX/ and use a demo account:
 | Transporter | `transporter@mizigox.com` | `transporter` |
 | Driver | `driver@mizigox.com` | `driver` |
 
+## Run on the internet (from this GitHub repo)
+
+GitHub Pages can only host the login screen. It cannot run FastAPI, so sign-in will fail there.
+
+To run the **full app** (login + data), deploy this repository to a host that builds the Docker image. [Render](https://render.com) is the included option:
+
+1. Open [https://dashboard.render.com/select-repo?type=web](https://dashboard.render.com/select-repo?type=web)
+2. Sign in with GitHub and select **Gasasira250/MizigoX**
+3. Set the branch to **`tms`** (that branch has this TMS app)
+4. Runtime: **Docker**. Health check path: `/health`
+5. Create the web service and wait for the first deploy
+
+Then open `https://YOUR-SERVICE.onrender.com/MizigoX/` and sign in with a demo account. The first request can take a minute on the free plan.
+
 ## Flow
 
 1. **Client** posts cargo: commodity, containers, tonnes, vehicle type (e.g. double difference), loading date, urgency, and cargo notes.

@@ -2,13 +2,16 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, RedirectResponse
 
-from app.config import CORS_ORIGINS, UPLOAD_DIR
+from app.config import BASE_DIR, CORS_ORIGIN_REGEX, CORS_ORIGINS, UPLOAD_DIR
 from app.database import Base, SessionLocal, engine
 from app.routers import auth, customers, dashboard, documents, fleet, loads, notifications, search, tracking
 from app.schema_migrate import ensure_schema
 from app.populate import populate_marketplace
 from app.seed import ensure_demo_data, seed_if_empty
+
+FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
 
 
 @asynccontextmanager
@@ -31,6 +34,7 @@ app = FastAPI(title="MizigoX Freight", version="0.2.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,3 +54,30 @@ app.include_router(documents.router)
 @app.get("/health")
 def health():
     return {"ok": True, "service": "mizigox"}
+
+
+@app.get("/")
+def root():
+    if (FRONTEND_DIST / "index.html").is_file():
+        return RedirectResponse("/MizigoX/")
+    return {"ok": True, "service": "mizigox"}
+
+
+@app.get("/MizigoX")
+@app.get("/MizigoX/")
+def ui_index():
+    index = FRONTEND_DIST / "index.html"
+    if not index.is_file():
+        return {"detail": "Frontend build missing. Run npm run build in frontend."}
+    return FileResponse(index)
+
+
+@app.get("/MizigoX/{asset_path:path}")
+def ui_asset(asset_path: str):
+    target = FRONTEND_DIST / asset_path
+    if target.is_file():
+        return FileResponse(target)
+    index = FRONTEND_DIST / "index.html"
+    if index.is_file():
+        return FileResponse(index)
+    return {"detail": "Not Found"}
