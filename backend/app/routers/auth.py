@@ -52,3 +52,13 @@ def login(
 @router.get("/me", response_model=UserOut)
 def me(current: User = Depends(get_current_user)):
     return current
+
+
+@router.get("/people", response_model=list[UserOut])
+def people(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+    return (
+        db.query(User)
+        .filter(User.role.in_(("transporter", "driver", "dispatcher", "partner", "admin", "owner")))
+        .order_by(User.role, User.name)
+        .all()
+    )

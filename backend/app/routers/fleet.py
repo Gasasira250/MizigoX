@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.database import get_db
 from app.models import Driver, Trailer, Truck, User
+from app.roles import is_admin, is_transporter
 from app.schemas import (
     DriverCreate,
     DriverOut,
@@ -35,9 +36,12 @@ def list_drivers(db: Session = Depends(get_db), _: User = Depends(get_current_us
 def create_driver(
     payload: DriverCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current: User = Depends(get_current_user),
 ):
-    row = Driver(**payload.model_dump())
+    data = payload.model_dump()
+    if is_transporter(current) or is_admin(current):
+        data["owner_user_id"] = current.id
+    row = Driver(**data)
     db.add(row)
     db.commit()
     db.refresh(row)
@@ -81,11 +85,14 @@ def list_trucks(db: Session = Depends(get_db), _: User = Depends(get_current_use
 def create_truck(
     payload: TruckCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current: User = Depends(get_current_user),
 ):
     if db.query(Truck).filter(Truck.unit_number == payload.unit_number).first():
         raise HTTPException(status_code=400, detail="Unit number already exists")
-    row = Truck(**payload.model_dump())
+    data = payload.model_dump()
+    if is_transporter(current) or is_admin(current):
+        data["owner_user_id"] = current.id
+    row = Truck(**data)
     db.add(row)
     db.commit()
     db.refresh(row)

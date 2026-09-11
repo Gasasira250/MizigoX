@@ -1,4 +1,18 @@
-import type { Customer, Dashboard, Document, Driver, Load, LoadPayload, Trailer, Truck, User } from './types'
+import type {
+  AppNotification,
+  Customer,
+  Dashboard,
+  Document,
+  Driver,
+  Load,
+  LoadPayload,
+  Quote,
+  TrackingTruck,
+  Trailer,
+  Truck,
+  User,
+  SearchResults,
+} from './types'
 
 const API = 'http://127.0.0.1:8000'
 
@@ -55,7 +69,9 @@ export function register(payload: { email: string; password: string; name: strin
 }
 
 export const me = () => api<User>('/auth/me')
+export const listPeople = () => api<User[]>('/auth/people')
 export const getDashboard = () => api<Dashboard>('/dashboard')
+export const searchAll = (q: string) => api<SearchResults>(`/search?q=${encodeURIComponent(q)}`)
 export const listCustomers = () => api<Customer[]>('/customers')
 export const createCustomer = (payload: Omit<Customer, 'id'>) =>
   api<Customer>('/customers', { method: 'POST', body: JSON.stringify(payload) })
@@ -80,10 +96,23 @@ export const createTrailer = (payload: Omit<Trailer, 'id'>) =>
 export const updateTrailer = (id: number, payload: Partial<Trailer>) =>
   api<Trailer>(`/fleet/trailers/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
 
-export const listLoads = (params?: { status?: string; q?: string }) => {
+export const listLoads = (params?: {
+  status?: string
+  q?: string
+  customer_id?: number
+  transporter_id?: number
+  driver_id?: number
+  date_from?: string
+  date_to?: string
+}) => {
   const qs = new URLSearchParams()
   if (params?.status) qs.set('status', params.status)
   if (params?.q) qs.set('q', params.q)
+  if (params?.customer_id) qs.set('customer_id', String(params.customer_id))
+  if (params?.transporter_id) qs.set('transporter_id', String(params.transporter_id))
+  if (params?.driver_id) qs.set('driver_id', String(params.driver_id))
+  if (params?.date_from) qs.set('date_from', params.date_from)
+  if (params?.date_to) qs.set('date_to', params.date_to)
   const suffix = qs.toString() ? `?${qs}` : ''
   return api<Load[]>(`/loads${suffix}`)
 }
@@ -92,12 +121,41 @@ export const createLoad = (payload: LoadPayload) =>
   api<Load>('/loads', { method: 'POST', body: JSON.stringify(payload) })
 export const updateLoad = (id: number, payload: Partial<LoadPayload>) =>
   api<Load>(`/loads/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
+export const listJobs = () => api<Load[]>('/loads/jobs')
+export const quoteLoad = (payload: {
+  pickup_location: string
+  delivery_location: string
+  weight_tonnes: number
+  vehicle_type: string
+  urgency: string
+  container_count?: number
+}) => api<Quote>('/loads/quote', { method: 'POST', body: JSON.stringify(payload) })
+export const broadcastLoad = (id: number) => api<Load>(`/loads/${id}/broadcast`, { method: 'POST' })
+export const coverLoad = (
+  id: number,
+  payload: {
+    trucks_provided: number
+    truck_id?: number | null
+    trailer_id?: number | null
+    driver_id?: number | null
+    truck_details: string
+  },
+) => api<Load>(`/loads/${id}/cover`, { method: 'POST', body: JSON.stringify(payload) })
+export const acceptLoad = (id: number) => api<Load>(`/loads/${id}/accept`, { method: 'POST' })
 export const assignLoad = (
   id: number,
   payload: { driver_id: number; truck_id: number; trailer_id?: number | null },
 ) => api<Load>(`/loads/${id}/assign`, { method: 'POST', body: JSON.stringify(payload) })
 export const updateLoadStatus = (id: number, status: string, note = '') =>
   api<Load>(`/loads/${id}/status`, { method: 'POST', body: JSON.stringify({ status, note }) })
+export const listNotifications = () => api<AppNotification[]>('/notifications')
+export const markNotificationRead = (id: number) =>
+  api<AppNotification>(`/notifications/${id}/read`, { method: 'POST' })
+export const markAllNotificationsRead = () => api<{ ok: boolean }>('/notifications/read-all', { method: 'POST' })
+export const getLiveTrucks = () => api<TrackingTruck[]>('/tracking')
+export const getLoadTracking = (id: number) => api<TrackingTruck[]>(`/tracking/loads/${id}`)
+export const pingLocation = (payload: { lat: number; lng: number; load_id?: number | null }) =>
+  api<Truck>('/tracking/ping', { method: 'POST', body: JSON.stringify(payload) })
 
 export async function uploadDocument(loadId: number, file: File, docType: string) {
   const body = new FormData()
