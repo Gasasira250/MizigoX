@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -19,6 +19,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     driver_profile: Mapped["Driver | None"] = relationship(foreign_keys=[driver_id])
+    notifications: Mapped[list["Notification"]] = relationship(back_populates="user")
 
 
 class Customer(Base):
@@ -43,6 +44,8 @@ class Driver(Base):
     phone: Mapped[str] = mapped_column(String(40), default="")
     cdl: Mapped[str] = mapped_column(String(40), default="")
     status: Mapped[str] = mapped_column(String(40), default="available")
+    vehicle_type: Mapped[str] = mapped_column(String(40), default="double_diff")
+    owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     loads: Mapped[list["Load"]] = relationship(back_populates="driver")
@@ -56,6 +59,15 @@ class Truck(Base):
     vin: Mapped[str] = mapped_column(String(40), default="")
     plate: Mapped[str] = mapped_column(String(20), default="")
     status: Mapped[str] = mapped_column(String(40), default="available")
+    vehicle_type: Mapped[str] = mapped_column(String(40), default="double_diff")
+    capacity_tonnes: Mapped[float] = mapped_column(Float, default=28)
+    spec: Mapped[str] = mapped_column(String(255), default="")
+    owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    lng: Mapped[float | None] = mapped_column(Float, nullable=True)
+    heading: Mapped[float] = mapped_column(Float, default=0)
+    speed_kmh: Mapped[float] = mapped_column(Float, default=0)
+    location_updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     loads: Mapped[list["Load"]] = relationship(back_populates="truck")
@@ -80,7 +92,9 @@ class Load(Base):
     reference: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True)
     shipper_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    vehicle_type: Mapped[str] = mapped_column(String(40), default="truck")
+    transporter_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    vehicle_type: Mapped[str] = mapped_column(String(40), default="double_diff")
+    truck_spec: Mapped[str] = mapped_column(String(255), default="")
     pickup_location: Mapped[str] = mapped_column(String(255))
     pickup_window_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     pickup_window_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -89,8 +103,17 @@ class Load(Base):
     delivery_window_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     commodity: Mapped[str] = mapped_column(String(200), default="")
     weight_lbs: Mapped[float] = mapped_column(Float, default=0)
+    weight_tonnes: Mapped[float] = mapped_column(Float, default=0)
+    container_count: Mapped[int] = mapped_column(Integer, default=0)
+    urgency: Mapped[str] = mapped_column(String(40), default="standard")
+    distance_km: Mapped[float] = mapped_column(Float, default=0)
     rate: Mapped[float] = mapped_column(Float, default=0)
-    status: Mapped[str] = mapped_column(String(40), default="open", index=True)
+    currency: Mapped[str] = mapped_column(String(8), default="USD")
+    trucks_needed: Mapped[int] = mapped_column(Integer, default=1)
+    trucks_provided: Mapped[int] = mapped_column(Integer, default=0)
+    truck_details: Mapped[str] = mapped_column(Text, default="")
+    quote_breakdown: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String(40), default="posted", index=True)
     driver_id: Mapped[int | None] = mapped_column(ForeignKey("drivers.id"), nullable=True)
     truck_id: Mapped[int | None] = mapped_column(ForeignKey("trucks.id"), nullable=True)
     trailer_id: Mapped[int | None] = mapped_column(ForeignKey("trailers.id"), nullable=True)
@@ -102,6 +125,7 @@ class Load(Base):
 
     customer: Mapped["Customer | None"] = relationship(back_populates="loads")
     shipper: Mapped["User | None"] = relationship(foreign_keys=[shipper_user_id])
+    transporter: Mapped["User | None"] = relationship(foreign_keys=[transporter_user_id])
     driver: Mapped["Driver | None"] = relationship(back_populates="loads")
     truck: Mapped["Truck | None"] = relationship(back_populates="loads")
     trailer: Mapped["Trailer | None"] = relationship(back_populates="loads")
@@ -137,3 +161,31 @@ class Document(Base):
     uploaded_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     load: Mapped["Load"] = relationship(back_populates="documents")
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    load_id: Mapped[int | None] = mapped_column(ForeignKey("loads.id"), nullable=True)
+    kind: Mapped[str] = mapped_column(String(40), default="info")
+    title: Mapped[str] = mapped_column(String(200), default="")
+    message: Mapped[str] = mapped_column(Text, default="")
+    read: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="notifications")
+
+
+class TruckPing(Base):
+    __tablename__ = "truck_pings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    truck_id: Mapped[int] = mapped_column(ForeignKey("trucks.id"), index=True)
+    load_id: Mapped[int | None] = mapped_column(ForeignKey("loads.id"), nullable=True)
+    lat: Mapped[float] = mapped_column(Float)
+    lng: Mapped[float] = mapped_column(Float)
+    heading: Mapped[float] = mapped_column(Float, default=0)
+    speed_kmh: Mapped[float] = mapped_column(Float, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

@@ -1,179 +1,210 @@
-import { useEffect, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { assignLoad, listDrivers, listLoads, listTrailers, listTrucks } from '../api'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { acceptLoad, broadcastLoad, listLoads } from '../api'
+import { useAuth } from '../auth'
 import StatusBadge from '../components/StatusBadge'
-import { formatWhen, money, STATUS_LABEL } from '../format'
-import type { Driver, Load, Trailer, Truck } from '../types'
+import { PageHeader } from '../components/system'
+import {
+  formatWhen,
+  isAdmin,
+  isDriver,
+  isTransporter,
+  money,
+  shipperName,
+  URGENCY_LABEL,
+  VEHICLE_LABEL,
+  weight,
+} from '../format'
+import type { Load } from '../types'
+
+function LoadCard({
+  load,
+  actionLabel,
+  onAction,
+}: {
+  load: Load
+  actionLabel?: string
+  onAction?: () => void
+}) {
+  const navigate = useNavigate()
+  return (
+    <article
+      className="load-card row-click"
+      tabIndex={0}
+      onClick={() => navigate(`/loads/${load.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          navigate(`/loads/${load.id}`)
+        }
+      }}
+    >
+      <div className="load-card-top">
+        <Link to={`/loads/${load.id}`}>{load.reference}</Link>
+        <StatusBadge status={load.status} />
+      </div>
+      <p>
+        {load.pickup_location} → {load.delivery_location}
+      </p>
+      <p className="muted">
+        {shipperName(load)} · {weight(load.weight_tonnes)} · {VEHICLE_LABEL[load.vehicle_type || ''] ?? load.vehicle_type} ·{' '}
+        {URGENCY_LABEL[load.urgency || ''] ?? load.urgency}
+      </p>
+      <p className="muted">
+        Load {formatWhen(load.pickup_window_start)} · {money(load.rate)} · {load.trucks_needed ?? 1} truck(s)
+      </p>
+      {load.trucks_provided ? <p>{load.trucks_provided} truck(s) provided. {load.truck_details}</p> : null}
+      {actionLabel && onAction ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onAction()
+          }}
+        >
+          {actionLabel}
+        </button>
+      ) : (
+        <Link to={`/loads/${load.id}`} onClick={(e) => e.stopPropagation()}>
+          Open
+        </Link>
+      )}
+    </article>
+  )
+}
 
 export default function DispatchPage() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [loads, setLoads] = useState<Load[]>([])
-  const [drivers, setDrivers] = useState<Driver[]>([])
-  const [trucks, setTrucks] = useState<Truck[]>([])
-  const [trailers, setTrailers] = useState<Trailer[]>([])
-  const [selected, setSelected] = useState<number | null>(null)
-  const [assign, setAssign] = useState({ driver_id: '', truck_id: '', trailer_id: '' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [q, setQ] = useState('')
 
   async function refresh() {
-    const [all, d, t, tr] = await Promise.all([listLoads(), listDrivers(), listTrucks(), listTrailers()])
-    setLoads(all.filter((l) => l.status !== 'delivered'))
-    setDrivers(d)
-    setTrucks(t)
-    setTrailers(tr)
+    setLoads(await listLoads())
   }
 
   useEffect(() => {
     refresh().catch((err: Error) => setError(err.message))
   }, [])
 
-  const unassigned = loads.filter((l) => l.status === 'booked')
-  const moving = loads.filter((l) => l.status !== 'booked')
+  const posted = loads.filter((l) => l.status === 'posted' && match(l))
+  const open = loads.filter((l) => l.status === 'open' && match(l))
+  const covered = loads.filter((l) => (l.status === 'accepted' || l.status === 'picked_up' || l.status === 'in_transit') && match(l))
 
-  async function onAssign(e: FormEvent) {
-    e.preventDefault()
-    if (!selected) return
+  function match(load: Load) {
+    const term = q.trim().toLowerCase()
+    if (!term) return true
+    return [load.reference, load.pickup_location, load.delivery_location, load.commodity, shipperName(load)]
+      .join(' ')
+      .toLowerCase()
+      .includes(term)
+  }
+
+  async function sendOut(id: number) {
     setBusy(true)
     setError('')
     try {
-      await assignLoad(selected, {
-        driver_id: Number(assign.driver_id),
-        truck_id: Number(assign.truck_id),
-        trailer_id: assign.trailer_id ? Number(assign.trailer_id) : null,
-      })
-      setSelected(null)
-      setAssign({ driver_id: '', truck_id: '', trailer_id: '' })
+      await broadcastLoad(id)
       await refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Assign failed')
+      setError(err instanceof Error ? err.message : 'Could not send job')
     } finally {
       setBusy(false)
     }
   }
 
-  function LoadCard({ load, action }: { load: Load; action?: boolean }) {
-    return (
-      <article className="load-card">
-        <div className="load-card-top">
-          <Link to={`/loads/${load.id}`}>{load.reference}</Link>
-          <StatusBadge status={load.status} />
-        </div>
-        <p>
-          {load.pickup_location} → {load.delivery_location}
-        </p>
-        <p className="muted">
-          {load.customer?.name} · {formatWhen(load.pickup_window_start)} · {money(load.rate)}
-        </p>
-        {load.driver ? (
-          <p className="muted">
-            {load.driver.name} · {load.truck?.unit_number}
-          </p>
-        ) : null}
-        {action ? (
-          <button type="button" onClick={() => setSelected(load.id)}>
-            Assign
-          </button>
-        ) : (
-          <Link to={`/loads/${load.id}`}>Open</Link>
-        )}
-      </article>
-    )
+  async function take(id: number) {
+    setBusy(true)
+    setError('')
+    try {
+      await acceptLoad(id)
+      await refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not take job')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div>
-      <header className="page-head">
-        <div>
-          <h1>Dispatch board</h1>
-          <p className="muted">Assign available trucks to booked freight.</p>
-        </div>
-      </header>
+      <PageHeader
+        kicker={isAdmin(user?.role) ? 'Operations' : isTransporter(user?.role) ? 'Carrier' : 'Driver'}
+        title={isAdmin(user?.role) ? 'Freight requests' : isTransporter(user?.role) ? 'Open freight' : 'Driver jobs'}
+        subtitle={
+          isAdmin(user?.role)
+            ? 'Client posts land here. Send each one to every carrier.'
+            : isTransporter(user?.role)
+              ? 'Accept a job and provide truck details to the client.'
+              : 'Take a job. Loading date and urgency are on the card.'
+        }
+      />
       {error ? <p className="error">{error}</p> : null}
-      <div className="board">
+      <div className="toolbar filters">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search requests" />
+      </div>
+      <div className="board board-3">
+        {isAdmin(user?.role) ? (
+          <section className="panel">
+            <div className="panel-head">
+              <h2>Client posts</h2>
+              <span className={posted.length ? 'count-hot' : ''}>{posted.length}</span>
+            </div>
+            <div className="card-stack">
+              {posted.map((load) => (
+                <LoadCard
+                  key={load.id}
+                  load={load}
+                  actionLabel={busy ? 'Sending…' : 'Send to carriers'}
+                  onAction={() => sendOut(load.id)}
+                />
+              ))}
+              {posted.length === 0 ? <p className="muted">No new client posts.</p> : null}
+            </div>
+          </section>
+        ) : null}
         <section className="panel">
           <div className="panel-head">
-            <h2>Unassigned</h2>
-            <span>{unassigned.length}</span>
+            <h2>Open for carriers</h2>
+            <span className={open.length ? 'count-hot' : ''}>{open.length}</span>
           </div>
           <div className="card-stack">
-            {unassigned.map((load) => (
-              <LoadCard key={load.id} load={load} action />
+            {open.map((load) => (
+              <LoadCard
+                key={load.id}
+                load={load}
+                actionLabel={isTransporter(user?.role) ? 'Accept & provide trucks' : isDriver(user?.role) ? 'Take job' : undefined}
+                onAction={
+                  isTransporter(user?.role)
+                    ? () => navigate(`/loads/${load.id}`)
+                    : isDriver(user?.role)
+                      ? () => take(load.id)
+                      : undefined
+                }
+              />
             ))}
-            {unassigned.length === 0 ? <p className="muted">Nothing waiting on a truck.</p> : null}
+            {open.length === 0 ? <p className="muted">Nothing waiting on the market.</p> : null}
           </div>
         </section>
         <section className="panel">
           <div className="panel-head">
             <h2>Covered / moving</h2>
-            <span>{moving.length}</span>
+            <span>{covered.length}</span>
           </div>
           <div className="card-stack">
-            {moving.map((load) => (
-              <LoadCard key={load.id} load={load} />
+            {covered.map((load) => (
+              <LoadCard
+                key={load.id}
+                load={load}
+                actionLabel={isDriver(user?.role) && !load.driver_id ? 'Take job' : undefined}
+                onAction={isDriver(user?.role) && !load.driver_id ? () => take(load.id) : undefined}
+              />
             ))}
           </div>
         </section>
       </div>
-
-      {selected ? (
-        <div className="modal-backdrop" onClick={() => setSelected(null)}>
-          <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={onAssign}>
-            <h2>Assign equipment</h2>
-            <label>
-              Driver
-              <select
-                required
-                value={assign.driver_id}
-                onChange={(e) => setAssign({ ...assign, driver_id: e.target.value })}
-              >
-                <option value="">Select</option>
-                {drivers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name} ({STATUS_LABEL[d.status]})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Truck
-              <select
-                required
-                value={assign.truck_id}
-                onChange={(e) => setAssign({ ...assign, truck_id: e.target.value })}
-              >
-                <option value="">Select</option>
-                {trucks.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.unit_number} ({STATUS_LABEL[t.status]})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Trailer
-              <select
-                value={assign.trailer_id}
-                onChange={(e) => setAssign({ ...assign, trailer_id: e.target.value })}
-              >
-                <option value="">None</option>
-                {trailers.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.unit_number} ({STATUS_LABEL[t.status]})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="actions">
-              <button type="button" className="ghost" onClick={() => setSelected(null)}>
-                Cancel
-              </button>
-              <button type="submit" disabled={busy}>
-                Dispatch
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : null}
     </div>
   )
 }

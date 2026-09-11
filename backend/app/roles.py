@@ -1,8 +1,16 @@
-ROLES = ("customer", "driver", "partner")
+ROLES = ("customer", "driver", "partner", "transporter")
+
+
+def is_admin(user) -> bool:
+    return user.role in ("partner", "dispatcher", "owner", "admin")
 
 
 def is_partner(user) -> bool:
-    return user.role in ("partner", "dispatcher", "owner")
+    return is_admin(user)
+
+
+def is_transporter(user) -> bool:
+    return user.role == "transporter"
 
 
 def is_driver(user) -> bool:

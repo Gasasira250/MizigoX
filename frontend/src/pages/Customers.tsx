@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { createCustomer, listCustomers } from '../api'
+import { EmptyState, PageHeader } from '../components/system'
 import type { Customer } from '../types'
 
 const empty = { name: '', contact: '', phone: '', email: '', notes: '' }
@@ -8,6 +9,7 @@ export default function CustomersPage() {
   const [rows, setRows] = useState<Customer[]>([])
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
+  const [q, setQ] = useState('')
 
   async function refresh() {
     setRows(await listCustomers())
@@ -29,14 +31,17 @@ export default function CustomersPage() {
     }
   }
 
+  const visible = useMemo(() => {
+    const term = q.trim().toLowerCase()
+    if (!term) return rows
+    return rows.filter((row) =>
+      [row.name, row.contact, row.phone, row.email, row.notes].join(' ').toLowerCase().includes(term),
+    )
+  }, [rows, q])
+
   return (
     <div>
-      <header className="page-head">
-        <div>
-          <h1>Customers</h1>
-          <p className="muted">Brokers and shippers you haul for.</p>
-        </div>
-      </header>
+      <PageHeader kicker="Management" title="Customers" subtitle="Shippers who post cargo on MizigoX." />
       <form className="panel form-grid" onSubmit={onSubmit}>
         <label>
           Company
@@ -63,29 +68,38 @@ export default function CustomersPage() {
         </div>
       </form>
       {error ? <p className="error">{error}</p> : null}
+      <div className="toolbar filters">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customers" />
+      </div>
       <div className="table-wrap panel">
-        <table>
-          <thead>
-            <tr>
-              <th>Company</th>
-              <th>Contact</th>
-              <th>Phone</th>
-              <th>Email</th>
-              <th>Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.name}</td>
-                <td>{row.contact}</td>
-                <td>{row.phone}</td>
-                <td>{row.email}</td>
-                <td>{row.notes}</td>
+        {visible.length === 0 ? (
+          <EmptyState title="No customers in this view" body="Add a company or clear the search." />
+        ) : (
+          <table className="ops-table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Notes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {visible.map((row) => (
+                <tr key={row.id}>
+                  <td>
+                    <strong>{row.name}</strong>
+                  </td>
+                  <td>{row.contact || '—'}</td>
+                  <td>{row.phone || '—'}</td>
+                  <td>{row.email || '—'}</td>
+                  <td>{row.notes || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   )
