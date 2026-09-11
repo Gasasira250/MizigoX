@@ -38,7 +38,7 @@ export default function Login() {
       const msg = err instanceof Error ? err.message : 'Sign in failed'
       setError(
         /failed to fetch|networkerror|load failed/i.test(msg)
-          ? 'Cannot reach the MizigoX API at http://127.0.0.1:8000. Start the backend and open the local app to sign in.'
+          ? 'Cannot reach the MizigoX API. Confirm the backend is running, then try again.'
           : msg,
       )
     } finally {
@@ -148,12 +148,6 @@ export default function Login() {
             </button>
           </div>
 
-          {typeof window !== 'undefined' && window.location.hostname.endsWith('github.io') ? (
-            <p className="hint">
-              This public page is the interface only. Sign-in needs the MizigoX API on this computer
-              (`http://127.0.0.1:8000`). Use the local app at <code>http://localhost:5173/MizigoX/</code>.
-            </p>
-          ) : null}
           {error ? (
             <p className="error" role="alert">
               {error}

@@ -14,7 +14,13 @@ import type {
   SearchResults,
 } from './types'
 
-const API = 'http://127.0.0.1:8000'
+const configured = import.meta.env.VITE_API_URL as string | undefined
+const API =
+  configured !== undefined && configured !== ''
+    ? configured.replace(/\/$/, '')
+    : import.meta.env.DEV
+      ? 'http://127.0.0.1:8000'
+      : ''
 
 function errorMessage(detail: unknown, fallback: string) {
   if (typeof detail === 'string') return detail
