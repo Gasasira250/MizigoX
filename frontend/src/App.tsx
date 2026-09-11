@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import Layout from './components/Layout'
 import { ToastProvider } from './components/system'
@@ -19,41 +19,51 @@ import type { ReactNode } from 'react'
 function Guard({ children }: { children: ReactNode }) {
   const { user, ready } = useAuth()
   if (!ready) return <p className="boot">Loading MizigoX…</p>
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Login />
   return children
 }
 
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <Guard>
+            <Layout />
+          </Guard>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="loads" element={<LoadsPage />} />
+        <Route path="loads/:id" element={<LoadDetailPage />} />
+        <Route path="dispatch" element={<DispatchPage />} />
+        <Route path="transporters" element={<TransportersPage />} />
+        <Route path="tracking" element={<TrackingPage />} />
+        <Route path="fleet" element={<FleetPage />} />
+        <Route path="customers" element={<CustomersPage />} />
+        <Route path="quotes" element={<FinancePage kind="quotes" />} />
+        <Route path="invoices" element={<FinancePage kind="invoices" />} />
+        <Route path="payments" element={<FinancePage kind="payments" />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+
 export default function App() {
+  const routes = <AppRoutes />
   return (
     <AuthProvider>
       <ToastProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <Guard>
-                <Layout />
-              </Guard>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="loads" element={<LoadsPage />} />
-            <Route path="loads/:id" element={<LoadDetailPage />} />
-            <Route path="dispatch" element={<DispatchPage />} />
-            <Route path="transporters" element={<TransportersPage />} />
-            <Route path="tracking" element={<TrackingPage />} />
-            <Route path="fleet" element={<FleetPage />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="quotes" element={<FinancePage kind="quotes" />} />
-            <Route path="invoices" element={<FinancePage kind="invoices" />} />
-            <Route path="payments" element={<FinancePage kind="payments" />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+        {import.meta.env.PROD ? (
+          <HashRouter>{routes}</HashRouter>
+        ) : (
+          <BrowserRouter basename={import.meta.env.BASE_URL}>{routes}</BrowserRouter>
+        )}
       </ToastProvider>
     </AuthProvider>
   )
