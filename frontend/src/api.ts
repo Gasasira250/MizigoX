@@ -42,13 +42,9 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const res = await fetch(`${API}${path}`, { ...options, headers })
   if (res.status === 401) {
     localStorage.removeItem('token')
-    const onLogin = import.meta.env.PROD
-      ? window.location.hash.replace(/^#/, '').startsWith('/login')
-      : window.location.pathname.endsWith('/login')
-    if (!onLogin) {
-      window.location.href = import.meta.env.PROD
-        ? `${import.meta.env.BASE_URL}#/login`
-        : `${import.meta.env.BASE_URL}login`.replace(/\/{2,}/g, '/')
+    const loginPath = `${import.meta.env.BASE_URL}login`.replace(/\/{2,}/g, '/')
+    if (!window.location.pathname.endsWith('/login')) {
+      window.location.href = loginPath
     }
     throw new Error('Session expired. Sign in again.')
   }

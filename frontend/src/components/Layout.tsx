@@ -4,6 +4,7 @@ import { listNotifications, markAllNotificationsRead, markNotificationRead } fro
 import { useAuth } from '../auth'
 import GlobalSearch from './GlobalSearch'
 import Icon from './Icon'
+import PwaInstall from './PwaInstall'
 import { DEMOS } from '../demos'
 import { appRole, formatWhen, fromNow, notificationKindLabel, roleLabel } from '../format'
 import { NAV } from '../nav'
@@ -206,6 +207,7 @@ export default function Layout() {
           </div>
           <GlobalSearch />
           <div className="topbar-right">
+            <PwaInstall />
             <div className="notify-wrap">
               <button
                 type="button"

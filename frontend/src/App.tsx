@@ -1,4 +1,4 @@
-import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import Layout from './components/Layout'
 import { ToastProvider } from './components/system'
@@ -7,6 +7,7 @@ import DashboardPage from './pages/Dashboard'
 import DispatchPage from './pages/Dispatch'
 import FinancePage from './pages/Finance'
 import FleetPage from './pages/Fleet'
+import Landing from './pages/Landing'
 import LoadDetailPage from './pages/LoadDetail'
 import LoadsPage from './pages/Loads'
 import Login from './pages/Login'
@@ -18,8 +19,12 @@ import type { ReactNode } from 'react'
 
 function Guard({ children }: { children: ReactNode }) {
   const { user, ready } = useAuth()
+  const location = useLocation()
   if (!ready) return <p className="boot">Loading MizigoX…</p>
-  if (!user) return <Login />
+  if (!user) {
+    const home = location.pathname === '/'
+    return home ? <Landing /> : <Navigate to="/login" replace />
+  }
   return children
 }
 
@@ -55,15 +60,12 @@ function AppRoutes() {
 }
 
 export default function App() {
-  const routes = <AppRoutes />
   return (
     <AuthProvider>
       <ToastProvider>
-        {import.meta.env.PROD ? (
-          <HashRouter>{routes}</HashRouter>
-        ) : (
-          <BrowserRouter basename={import.meta.env.BASE_URL}>{routes}</BrowserRouter>
-        )}
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
+          <AppRoutes />
+        </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
   )

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { DEMOS } from '../demos'
 
@@ -78,6 +78,9 @@ export default function Login() {
           <div className="login-card-copy">
             <h1>Welcome back</h1>
             <p className="muted">Sign in to your MizigoX account</p>
+            <p className="muted">
+              <Link to="/">Back to home</Link>
+            </p>
           </div>
 
           <label htmlFor="login-email">

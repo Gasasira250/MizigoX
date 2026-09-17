@@ -46,6 +46,16 @@ To run the **full app** (login + data), deploy this repository to a host that bu
 
 Then open `https://YOUR-SERVICE.onrender.com/MizigoX/` and sign in with a demo account. The first request can take a minute on the free plan.
 
+## Appear on Google
+
+1. Put the full app on a public HTTPS URL (Render + a domain such as `mizigox.com` is best).
+2. Confirm the public home page opens without signing in.
+3. Open [Google Search Console](https://search.google.com/search-console), add the domain, and verify it.
+4. Submit `https://YOUR-DOMAIN/sitemap.xml` (or `https://gasasira250.github.io/MizigoX/sitemap.xml` for the GitHub Pages listing).
+5. On Chrome/Edge, use **Install app** on the home page to add MizigoX to the device.
+
+GitHub Pages can be listed by Google as a brochure site. Sign-in and live data still need the hosted API.
+
 ## Flow
 
 1. **Client** posts cargo: commodity, containers, tonnes, vehicle type (e.g. double difference), loading date, urgency, and cargo notes.

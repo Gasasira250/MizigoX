@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, Response
 
 from app.config import BASE_DIR, CORS_ORIGIN_REGEX, CORS_ORIGINS, UPLOAD_DIR
 from app.database import Base, SessionLocal, engine
@@ -54,6 +54,28 @@ app.include_router(documents.router)
 @app.get("/health")
 def health():
     return {"ok": True, "service": "mizigox"}
+
+
+@app.get("/robots.txt")
+def robots(request: Request):
+    origin = str(request.base_url).rstrip("/")
+    body = f"User-agent: *\nAllow: /\nAllow: /MizigoX/\nSitemap: {origin}/sitemap.xml\n"
+    return Response(content=body, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap(request: Request):
+    origin = str(request.base_url).rstrip("/")
+    home = f"{origin}/MizigoX/"
+    login = f"{origin}/MizigoX/login"
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"<url><loc>{home}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>"
+        f"<url><loc>{login}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>"
+        "</urlset>"
+    )
+    return Response(content=xml, media_type="application/xml")
 
 
 @app.get("/")
