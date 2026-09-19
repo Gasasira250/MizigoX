@@ -114,6 +114,10 @@ That runs `node dist/server.js` — not `tsx watch`. Serve `apps/web/dist` from 
 | Logging & health      | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
 | Launch & smoke tests  | [docs/LAUNCH.md](docs/LAUNCH.md)         |
 
+## FixRwanda mobile demo
+
+A separate Flutter customer app for Kigali home services lives in [`fixrwanda/`](fixrwanda/README.md). It uses mock data and is not the MizigoX freight product.
+
 ## Launch status
 
 MizigoX is **not ready for production** until you configure hosting, a managed database, HTTPS, secrets, backups, and the external providers you need (email, and payment if you will take card/mobile-money live). The application code is prepared for that work; it does not purchase cloud services or domains for you.

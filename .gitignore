@@ -37,3 +37,12 @@ test-results
 
 # Local proof-of-delivery / document storage
 var/storage
+
+# Flutter (FixRwanda)
+fixrwanda/.dart_tool/
+fixrwanda/.flutter-plugins-dependencies
+fixrwanda/.pub-cache/
+fixrwanda/.pub/
+fixrwanda/build/
+fixrwanda/.idea/
+fixrwanda/*.iml
