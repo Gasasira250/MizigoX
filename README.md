@@ -38,6 +38,7 @@ apps/web          Operations, customer, and driver portals
 packages/shared   Enums, permissions, payloads
 infra             Local Postgres Compose, nginx example
 docs              Deployment, security, backups, launch
+kora_gig_mobile   Flutter Android demo: Kora Gig marketplace
 ```
 
 ## Local development

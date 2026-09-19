@@ -3,3 +3,4 @@ node_modules
 coverage
 package-lock.json
 *.min.js
+kora_gig_mobile
