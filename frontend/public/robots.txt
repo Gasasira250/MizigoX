@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Allow: /MizigoX/
+
+Sitemap: https://gasasira250.github.io/MizigoX/sitemap.xml

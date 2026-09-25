@@ -1,0 +1,10 @@
+.git
+.github
+**/.venv
+**/__pycache__
+**/*.pyc
+backend/mizigox.db
+backend/uploads
+frontend/node_modules
+frontend/dist
+*.md
